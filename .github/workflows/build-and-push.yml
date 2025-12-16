@@ -1,0 +1,24 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: ["main", "develop"]
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    uses: integral-software/ci-templates/.github/workflows/build-and-push-frontend.yml@main
+    with:
+      image_name: 011248589833.dkr.ecr.us-east-1.amazonaws.com/alcaldiamed/mf-oime-admin-shell-web
+      image_tag: ${{ github.ref_name }}
+      docker_context: .
+      dockerfile: Dockerfile
+      enable_dual_tags: "true"
+      enable_helm_update: "true"
+      helm_repository: ${{ github.ref_name == 'main' && 'integral-software/catastro-k8s-prd' || 'integral-software/catastro-k8s-dev' }}
+      helm_chart_file: apps/oime/admin/main-chart/charts/api-console-gateway/Chart.yaml
+      helm_value_file: apps/oime/admin/main-chart/charts/api-console-gateway/values.yaml
+      helm_values_key: initContainers.shellVersion
+    secrets: inherit

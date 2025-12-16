@@ -1,0 +1,13 @@
+{
+	"typescript.preferences.importModuleSpecifier": "non-relative",
+	"javascript.preferences.importModuleSpecifier": "non-relative",
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "always",
+		"source.organizeImports": "always"
+	},
+	"typescript.preferences.preferTypeOnlyImports": true,
+	"javascript.preferences.preferTypeOnlyImports": true
+}
