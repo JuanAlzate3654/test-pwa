@@ -12,6 +12,7 @@ import {
 } from "@integral-software/react-utilities";
 import { GlobalStore } from '@integral-software/redux-micro-frontend';
 import AddIcon from "@mui/icons-material/Add";
+import MapIcon from '@mui/icons-material/Map';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Button, Chip, FormControl, InputAdornment, InputLabel, Link, MenuItem, Paper, Select, Switch, TextField, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -22,7 +23,6 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink } from 'react-router-dom';
 import { APP_ID } from "src/store/store";
-
 import DomainListMenu from "./DomainListMenu";
 export default function DomainList() {
 
@@ -197,6 +197,13 @@ export default function DomainList() {
                         <Tooltip title={t("domain_list_new_button_tooltip")} arrow>
                             <Button startIcon={<AddIcon />}>
                                 {t("domain_list_new_button")}
+                            </Button>
+                        </Tooltip>
+                    </Link>
+                    <Link component={RouterLink} to="map">
+                        <Tooltip title={t("domain_list_map_button_tooltip")} arrow>
+                            <Button startIcon={<MapIcon />}>
+                                {t("domain_list_map_button")}
                             </Button>
                         </Tooltip>
                     </Link>

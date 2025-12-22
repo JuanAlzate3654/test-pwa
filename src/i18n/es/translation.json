@@ -46,6 +46,10 @@
   "domain_new_key_required": "El código es obligatorio",
   "domain_new_value_required": "El valor es obligatorio",
   "domain_new_save_success_message": "El dominio se guardo exitosamente.",
+  "domain_new_images_tooltip": "Imágenes asociadas al dominio",
+  "domain_new_images": "Imágenes",
+  "domain_new_file_tooltip": "Archivo asociado al dominio",
+  "domain_new_file": "Archivo",
   "domain_edit_title": "Actualizar",
   "domain_edit_group_tooltip": "Grupo",
   "domain_edit_group": "Grupo",
@@ -60,8 +64,9 @@
   "domain_edit_key_required": "El código es obligatorio",
   "domain_edit_value_required": "El valor es obligatorio",
   "domain_edit_save_success_message": "El dominio se guardo exitosamente.",
-  "domain_new_images_tooltip": "Imágenes asociadas al dominio",
-  "domain_new_images": "Imágenes",
-  "domain_new_file_tooltip": "Archivo asociado al dominio",
-  "domain_new_file": "Archivo"
+  "domain_list_map_button_tooltip": "Ver dominios en el mapa",
+  "domain_list_map_button": "Mapa",
+  "domain_map_download_tiles_button": "Descargar esta zona offline",
+  "domain_map_refresh_button_tooltip": "Actualizar mapa",
+  "domain_map_recenter_button_tooltip": "Centrar mapa en la ubicación actual"
 }

@@ -1,5 +1,6 @@
 import DomainEdit from "@components/domain/domainEdit/DomainEdit";
 import DomainList from "@components/domain/domainList/DomainList";
+import MapView from "@components/domain/domainMap/DomainMap";
 import DomainNew from "@components/domain/domainNew/DomainNew";
 import { RouterWithDialog } from "@integral-software/react-utilities";
 import { Suspense } from 'react';
@@ -23,6 +24,12 @@ export default function DomainRoutes() {
                     element={
                         <Suspense fallback={"🌀 Loading"}>
                             <DomainEdit />
+                        </Suspense>
+                    } />
+                <Route path="map"
+                    element={
+                        <Suspense fallback={"🌀 Loading"}>
+                            <MapView />
                         </Suspense>
                     } />
             </Route>

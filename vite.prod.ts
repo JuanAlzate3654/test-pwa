@@ -58,6 +58,18 @@ export default defineConfig(({ mode }) => {
                                 },
                             },
                         },
+                        {
+                            urlPattern: ({ url }) =>
+                                url.origin.includes('tile.openstreetmap.org'),
+                            handler: 'CacheFirst',
+                            options: {
+                                cacheName: 'map-tiles',
+                                expiration: {
+                                    maxEntries: 3000,
+                                    maxAgeSeconds: 60 * 60 * 24 * 30,
+                                },
+                            },
+                        },
                     ],
                 },
             }),
