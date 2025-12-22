@@ -5,6 +5,7 @@ import { Box, Button, Tooltip } from '@mui/material';
 import maplibregl from 'maplibre-gl';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+
 type Bounds = {
     minLon: number;
     minLat: number;
@@ -15,12 +16,12 @@ type Bounds = {
 export default function MapView() {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const mapInstance = useRef<maplibregl.Map | null>(null);
-    const { t } = useTranslation();
     const userMarker = useRef<maplibregl.Marker | null>(null);
     const watchId = useRef<number | null>(null);
+    const { t } = useTranslation();
+
     const getCurrentBounds = (): Bounds | null => {
         if (!mapInstance.current) return null;
-
         const b = mapInstance.current.getBounds();
 
         return {
@@ -29,32 +30,25 @@ export default function MapView() {
             maxLon: b.getEast(),
             maxLat: b.getNorth(),
         };
-    }
+    };
 
-    const getUserLocation = (): Promise<{ lng: number; lat: number }> => {
-        return new Promise((resolve, reject) => {
+    const getUserLocation = (): Promise<{ lng: number; lat: number }> =>
+        new Promise((resolve, reject) => {
             if (!navigator.geolocation) {
                 reject('Geolocalización no soportada');
                 return;
             }
 
             navigator.geolocation.getCurrentPosition(
-                (pos) => {
+                pos =>
                     resolve({
                         lng: pos.coords.longitude,
                         lat: pos.coords.latitude,
-                    });
-                },
-                (err) => reject(err),
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0,
-                }
+                    }),
+                err => reject(err),
+                { enableHighAccuracy: true, timeout: 10000 }
             );
         });
-    }
-
 
     const lonLatToTile = (lon: number, lat: number, zoom: number) => {
         const x = Math.floor(((lon + 180) / 360) * Math.pow(2, zoom));
@@ -69,7 +63,7 @@ export default function MapView() {
             Math.pow(2, zoom)
         );
         return { x, y };
-    }
+    };
 
     const createUserMarkerElement = () => {
         const el = document.createElement('div');
@@ -80,13 +74,13 @@ export default function MapView() {
         el.style.border = '3px solid white';
         el.style.boxShadow = '0 0 6px rgba(0,0,0,0.4)';
         return el;
-    }
+    };
 
     const startTrackingUser = () => {
         if (!navigator.geolocation || !mapInstance.current) return;
 
         watchId.current = navigator.geolocation.watchPosition(
-            (pos) => {
+            pos => {
                 const lngLat: [number, number] = [
                     pos.coords.longitude,
                     pos.coords.latitude,
@@ -102,12 +96,8 @@ export default function MapView() {
                     userMarker.current.setLngLat(lngLat);
                 }
             },
-            (err) => console.error('GPS error', err),
-            {
-                enableHighAccuracy: true,
-                maximumAge: 2000,
-                timeout: 10000,
-            }
+            err => console.error('GPS error', err),
+            { enableHighAccuracy: true, maximumAge: 2000 }
         );
     };
 
@@ -118,19 +108,19 @@ export default function MapView() {
         }
     };
 
-    const loadMap = async () => {
-        if (!mapRef.current || mapInstance.current) return;
+    const destroyMap = () => {
+        stopTrackingUser();
+        userMarker.current?.remove();
+        userMarker.current = null;
 
-        let center: [number, number] = [-74.08175, 4.60971]; // fallback Bogotá
-        let zoom = 12;
-
-        try {
-            const userLocation = await getUserLocation();
-            center = [userLocation.lng, userLocation.lat];
-            zoom = 15;
-        } catch (e) {
-            console.warn('No se pudo obtener la ubicación del usuario');
+        if (mapInstance.current) {
+            mapInstance.current.remove();
+            mapInstance.current = null;
         }
+    };
+
+    const loadMap = () => {
+        if (!mapRef.current || mapInstance.current) return;
 
         mapInstance.current = new maplibregl.Map({
             container: mapRef.current,
@@ -143,36 +133,27 @@ export default function MapView() {
                         tileSize: 256,
                     },
                 },
-                layers: [
-                    {
-                        id: 'osm',
-                        type: 'raster',
-                        source: 'osm',
-                    },
-                ],
+                layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
             },
-            center,
-            zoom,
+            center: [-75.5812, 6.2442],
+            zoom: 12,
         });
 
-        new maplibregl.Marker({ color: '#ff0000ff' })
-            .setLngLat(center)
-            .addTo(mapInstance.current);
+        mapInstance.current.on('load', () => {
+            startTrackingUser();
+            recenterMap();
+        });
     };
+
 
     const recenterMap = async () => {
         if (!mapInstance.current) return;
 
         try {
             const center = await getUserLocation();
-
-            mapInstance.current.easeTo({
-                center,
-                zoom: 16,
-                duration: 1000,
-            });
-        } catch (e) {
-            console.warn('No se pudo obtener la ubicación');
+            mapInstance.current.easeTo({ center, zoom: 16, duration: 1000 });
+        } catch {
+            console.warn('No se pudo recentrar');
         }
     };
 
@@ -185,78 +166,66 @@ export default function MapView() {
         for (let x = minTile.x; x <= maxTile.x; x++) {
             for (let y = minTile.y; y <= maxTile.y; y++) {
                 const url = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
-
                 if (!(await cache.match(url))) {
                     const res = await fetch(url);
-                    if (res.ok) {
-                        await cache.put(url, res.clone());
-                    }
+                    if (res.ok) await cache.put(url, res.clone());
                 }
             }
         }
-
-        console.log(`Tiles descargados para zoom ${zoom}`);
     }
 
     useEffect(() => {
-        const timer = setTimeout(() => {
+        destroyMap();
+        const timeoutId = setTimeout(() => {
             loadMap();
-
-            mapInstance.current?.on('load', () => {
-                startTrackingUser();
-            });
-
-            return () => {
-                stopTrackingUser();
-                userMarker.current?.remove();
-                userMarker.current = null;
-                clearTimeout(timer);
-            };
         }, 100);
+
+        return () => {
+            clearTimeout(timeoutId);
+            destroyMap();
+        };
     }, []);
 
     return (
-        <LateralDialog width={{ xs: "100%", sm: "100%", md: "100%" }} sx={{
-            overflow: 'hidden',
-            padding: 0,
-        }}
+        <LateralDialog
+            width={{ xs: '100%', sm: '100%', md: '100%' }}
+            sx={{ overflow: 'hidden', padding: 0 }}
             Sticky={
-                <Box sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    gap: 1,
-                    padding: 0
-                }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
                     <Button
                         onClick={async () => {
                             const bounds = getCurrentBounds();
-                            if (!bounds) return;
+                            if (!bounds || !mapInstance.current) return;
 
-                            for (let z = 12; z <= 14; z++) {
-                                await downloadTiles(bounds, z);
+                            const z = Math.floor(mapInstance.current.getZoom());
+                            for (let zoom = z - 1; zoom <= z + 1; zoom++) {
+                                await downloadTiles(bounds, zoom);
                             }
                         }}
                     >
-                        {t("domain_map_download_tiles_button")}
+                        {t('domain_map_download_tiles_button')}
                     </Button>
-                    <Tooltip title={t("domain_map_refresh_button_tooltip")} arrow>
-                        <Button variant='outlined'
+
+                    <Tooltip title={t('domain_map_refresh_button_tooltip')} arrow>
+                        <Button
+                            variant="outlined"
                             onClick={() => {
-                                loadMap()
-                            }}>
+                                destroyMap();
+                                loadMap();
+                            }}
+                        >
                             <RefreshIcon />
                         </Button>
                     </Tooltip>
-                    <Tooltip title={t("domain_map_recenter_button_tooltip")} arrow>
-                        <Button variant='outlined'
-                            onClick={() => {
-                                recenterMap()
-                            }}>
+
+                    <Tooltip title={t('domain_map_recenter_button_tooltip')} arrow>
+                        <Button variant="outlined" onClick={recenterMap}>
                             <MyLocationIcon />
                         </Button>
                     </Tooltip>
                 </Box>
-            }>
+            }
+        >
             <Box ref={mapRef} style={{
                 width: '100%',
                 height: '100%',
