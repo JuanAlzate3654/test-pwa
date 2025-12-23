@@ -70,6 +70,23 @@ export default defineConfig(({ mode }) => {
                                 },
                             },
                         },
+                        {
+                            urlPattern: ({ url }) =>
+                                url.origin.includes('router.project-osrm.org') &&
+                                url.pathname.startsWith('/route/v1/'),
+                            handler: 'NetworkFirst',
+                            options: {
+                                cacheName: 'osrm-routes',
+                                networkTimeoutSeconds: 5,
+                                expiration: {
+                                    maxEntries: 500,
+                                    maxAgeSeconds: 60 * 60 * 24 * 7, // 7 días
+                                },
+                                cacheableResponse: {
+                                    statuses: [0, 200],
+                                },
+                            },
+                        },
                     ],
                 },
             }),

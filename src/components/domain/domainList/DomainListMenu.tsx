@@ -4,8 +4,9 @@ import { ConfirmDialogV2 } from "@integral-software/react-utilities";
 import { GlobalStore } from '@integral-software/redux-micro-frontend';
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from '@mui/icons-material/Edit';
+import MapIcon from '@mui/icons-material/Map';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { Menu as MenuUi,MenuItem } from "@mui/material";
+import { MenuItem, Menu as MenuUi } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import { APP_ID } from '@store/store';
 import type { CSSProperties } from 'react';
@@ -54,6 +55,11 @@ export default function DomainListMenu({ domain }: DomainListMenuProps) {
         closeMenu();
     };
 
+    const goToMap = () => {
+        void navigate('map', { state: { start: domain.start, end: domain.end } });
+        closeMenu();
+    };
+
     return (
         <div>
             <IconButton id={`option${domain.key}`}
@@ -78,6 +84,12 @@ export default function DomainListMenu({ domain }: DomainListMenuProps) {
                     onClick={goToEdit}>
                     <EditIcon />
                     {t("domain_list_menu_edit")}
+                </MenuItem>
+
+                <MenuItem style={styles.link}
+                    onClick={goToMap}>
+                    <MapIcon />
+                    {t("domain_list_map_button")}
                 </MenuItem>
 
                 <MenuItem style={styles.link}

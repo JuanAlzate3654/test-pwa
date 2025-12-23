@@ -10,7 +10,7 @@ export interface DomainEditGR {
 
 export class DomainEditService {
 
-    url = '/api/v1/domains';
+    url = (import.meta.env.VITE_API_URL || '') + '/v1/domains';
 
     find(group: string, key: string): Promise<DomainEditModel> {
         try {

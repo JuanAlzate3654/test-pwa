@@ -8,7 +8,7 @@ export interface DomainListGR {
 
 export class DomainListService {
 
-    url = (import.meta.env.VITE_API_URL || '') + '/api/v1/domains';
+    url = (import.meta.env.VITE_API_URL || '') + '/v1/domains';
 
     find(pagination: PaginationRequest): Promise<PageModel<DomainListModel>> {
         try {

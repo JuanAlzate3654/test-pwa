@@ -13,12 +13,89 @@ type Bounds = {
     maxLat: number;
 };
 
-export default function MapView() {
+type DomainMapProps = {
+    start?: [number, number];
+    end?: [number, number];
+    // ...otros props si necesitas
+};
+
+export default function MapView({ start, end }: DomainMapProps) {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const mapInstance = useRef<maplibregl.Map | null>(null);
     const userMarker = useRef<maplibregl.Marker | null>(null);
     const watchId = useRef<number | null>(null);
     const { t } = useTranslation();
+
+
+    async function getRoute(
+        start: [number, number],
+        end: [number, number]
+    ) {
+        const url = `https://router.project-osrm.org/route/v1/driving/` +
+            `${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (!data.routes || !data.routes.length) {
+                console.warn('No se encontró ruta OSRM', data);
+                return null;
+            }
+            return data.routes[0].geometry;
+        } catch (err) {
+            console.error('Error obteniendo ruta OSRM', err);
+            return null;
+        }
+    }
+
+    const drawRoute = (geometry: GeoJSON.LineString) => {
+        if (!mapInstance.current) return;
+
+        const map = mapInstance.current;
+
+        if (map.getSource('route')) {
+            (map.getSource('route') as maplibregl.GeoJSONSource)
+                .setData({
+                    type: 'Feature',
+                    geometry,
+                    properties: {}
+                });
+            return;
+        }
+
+        map.addSource('route', {
+            type: 'geojson',
+            data: {
+                type: 'Feature',
+                geometry,
+                properties: {}
+            }
+        });
+
+        map.addLayer({
+            id: 'route-layer',
+            type: 'line',
+            source: 'route',
+            layout: {
+                'line-join': 'round',
+                'line-cap': 'round'
+            },
+            paint: {
+                'line-color': '#1976d2',
+                'line-width': 5
+            }
+        });
+    };
+
+    const fetchRoute = async () => {
+        if (start && end && mapInstance.current) {
+            const geometry = await getRoute(start, end);
+            if (geometry) {
+                drawRoute(geometry);
+            } else {
+                console.warn('No se pudo dibujar la ruta: datos no válidos');
+            }
+        }
+    };
 
     const getCurrentBounds = (): Bounds | null => {
         if (!mapInstance.current) return null;
@@ -142,9 +219,9 @@ export default function MapView() {
         mapInstance.current.on('load', () => {
             startTrackingUser();
             recenterMap();
+            fetchRoute();
         });
     };
-
 
     const recenterMap = async () => {
         if (!mapInstance.current) return;
@@ -167,10 +244,29 @@ export default function MapView() {
             for (let y = minTile.y; y <= maxTile.y; y++) {
                 const url = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
                 if (!(await cache.match(url))) {
-                    const res = await fetch(url);
-                    if (res.ok) await cache.put(url, res.clone());
+                    try {
+                        const res = await fetch(url);
+                        if (res.ok) await cache.put(url, res.clone());
+                    } catch (e) {
+                        console.warn('Tile no descargado', url);
+                    }
                 }
             }
+        }
+    }
+
+    async function downloadRoute(
+        start: [number, number],
+        end: [number, number]
+    ) {
+        const url =
+            `https://router.project-osrm.org/route/v1/driving/` +
+            `${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+
+        try {
+            await fetch(url, { cache: 'no-store' });
+        } catch (e) {
+            console.warn('No se pudo descargar la ruta', e);
         }
     }
 
@@ -200,6 +296,7 @@ export default function MapView() {
                             const z = Math.floor(mapInstance.current.getZoom());
                             for (let zoom = z - 1; zoom <= z + 1; zoom++) {
                                 await downloadTiles(bounds, zoom);
+                                await downloadRoute(start!, end!);
                             }
                         }}
                     >
