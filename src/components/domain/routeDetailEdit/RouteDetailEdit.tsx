@@ -85,7 +85,7 @@ export default function RouteDetailEdit() {
                     padding: 2,
                 }}>
                 <Typography variant="h6" gutterBottom>
-                    {t("domain_edit_title")}
+                    {t("route_detail_edit_title")}
                 </Typography>
             </Box>
         )}
@@ -99,7 +99,7 @@ export default function RouteDetailEdit() {
             )}
         >
             <LoadDiv2 result={result.findOneResult}>
-                <Box style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <Box style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "16px" }}>
 
                     <Tooltip title={t("route_detail_edit_ruta_tooltip")} arrow>
                         <FormControl variant="filled">

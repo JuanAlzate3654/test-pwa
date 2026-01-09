@@ -1,4 +1,4 @@
-import type { DomainMapModel } from "@components/domain/domainMap/_redux/model";
+import type { RouteSurveyModel } from "@components/domain/routeSurvey/_redux/model";
 import type {
     ResultModel
 } from "@integral-software/react-utilities";
@@ -11,14 +11,14 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import { t } from "i18next";
 
-type domainMapResultType = "clearResult" | "findOneResult" | "saveResult";
+type routeSurveyResultType = "clearResult" | "findOneResult" | "saveResult";
 
-export interface DomainMapStateModel {
-    domain?: DomainMapModel;
-    result: Record<domainMapResultType, ResultModel>;
+export interface RouteSurveyStateModel {
+    survey?: RouteSurveyModel;
+    result: Record<routeSurveyResultType, ResultModel>;
 }
 
-function defaultState(): DomainMapStateModel {
+function defaultState(): RouteSurveyStateModel {
     return {
         result: {
             clearResult: defaultResultModel(),
@@ -28,49 +28,49 @@ function defaultState(): DomainMapStateModel {
     };
 }
 
-export const domainMapSlice = createSlice({
-    name: "domainMap",
+export const routeSurveySlice = createSlice({
+    name: "routeSurvey",
     initialState: defaultState(),
     reducers: {
         clearReducer: () => defaultState(),
         findOneReducer: (state, action: PayloadAction<{ id: string }>) => ({
             ...state,
             result: {
-                ...mergeResultWithLoading<domainMapResultType>(state, action, "findOneResult")
+                ...mergeResultWithLoading<routeSurveyResultType>(state, action, "findOneResult")
             },
         }),
         findOneSuccessReducer: (state, action) => ({
             ...state,
-            domain: action.payload,
+            survey: action.payload,
             result: {
-                ...mergeResultWithSuccess<domainMapResultType>(state, action, "findOneResult"),
+                ...mergeResultWithSuccess<routeSurveyResultType>(state, action, "findOneResult"),
             },
         }),
         findOneErrorReducer: (state, action) => ({
             ...state,
             result: {
-                ...mergeResultWithError<domainMapResultType>(state, action, "findOneResult"),
+                ...mergeResultWithError<routeSurveyResultType>(state, action, "findOneResult"),
             },
         }),
-        saveReducer: (state, action: PayloadAction<DomainMapModel>) => ({
+        saveReducer: (state, action: PayloadAction<RouteSurveyModel>) => ({
             ...state,
             result: {
-                ...mergeResultWithLoading<domainMapResultType>(state, action, "saveResult"),
+                ...mergeResultWithLoading<routeSurveyResultType>(state, action, "saveResult"),
             },
         }),
         saveSuccessReducer: (state, action: PayloadAction<void>) => ({
             ...state,
             result: {
-                ...mergeResultWithSuccess<domainMapResultType>(state, action, "saveResult", t("domain_edit_save_success_message")),
+                ...mergeResultWithSuccess<routeSurveyResultType>(state, action, "saveResult", t("domain_edit_save_success_message")),
             },
         }),
         saveErrorReducer: (state, action) => ({
             ...state,
             result: {
-                ...mergeResultWithError<domainMapResultType>(state, action, "saveResult"),
+                ...mergeResultWithError<routeSurveyResultType>(state, action, "saveResult"),
             },
         }),
     },
 });
 
-export default domainMapSlice.reducer;
+export default routeSurveySlice.reducer;

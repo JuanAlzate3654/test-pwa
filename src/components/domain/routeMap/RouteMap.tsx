@@ -1,4 +1,4 @@
-import { domainMapSlice, type DomainMapStateModel } from '@components/domain/domainMap/_redux/domainMapReducer';
+import { routeMapSlice, type RouteMapStateModel } from '@components/domain/routeMap/_redux/routeMapReducer';
 import { globalStore, isSuccess, LateralDialog, LoadDiv2, useGlobalSelector } from '@integral-software/react-utilities';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -10,8 +10,8 @@ import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
-import './DomainMap.css';
 import PopupContent from './PopupContent';
+import './RouteMap.css';
 type Bounds = {
     minLon: number;
     minLat: number;
@@ -26,19 +26,20 @@ export default function MapView() {
     const watchId = useRef<number | null>(null);
     const { t } = useTranslation();
     const { id } = useParams();
-    const { result, domain } = useGlobalSelector<DomainMapStateModel>(APP_ID, ({ domainMap }) => domainMap);
+    const { result, domain } = useGlobalSelector<RouteMapStateModel>(APP_ID, ({ routeMap }) => routeMap);
+    const lastUserLocation = useRef<{ lng: number; lat: number } | null>(null);
     const navigate = useNavigate();
 
     const goToDetailEdit = () => {
         void navigate(`${id}/detail-edit`, { relative: "route" });
     };
 
-    const goToSurvey = () => {
-        void navigate(`${id}/survey`, { relative: "route" });
+    const goToEditRouteEvidence = () => {
+        void navigate(`${id}/evidence-edit`, { relative: "route" });
     };
 
-    const goToEditRouteEvidence = () => {
-        void navigate(`${id}/edit-route-evidence`, { relative: "route" });
+    const goToSurvey = () => {
+        void navigate(`${id}/survey`, { relative: "route" });
     };
 
     async function getRoute(
@@ -159,6 +160,7 @@ export default function MapView() {
             const props = feature.properties;
             const popupContainer = document.createElement('div');
             const root = ReactDOM.createRoot(popupContainer);
+            goToInMap([coordinates.lng, coordinates.lat], 14);
             root.render(<PopupContent properties={props} goToDetailEdit={goToDetailEdit} goToSurvey={goToSurvey} goToEditRouteEvidence={goToEditRouteEvidence} />);
 
             new maplibregl.Popup()
@@ -236,24 +238,27 @@ export default function MapView() {
 
         watchId.current = navigator.geolocation.watchPosition(
             pos => {
-                const lngLat: [number, number] = [
-                    pos.coords.longitude,
-                    pos.coords.latitude,
-                ];
+                const lngLat = {
+                    lng: pos.coords.longitude,
+                    lat: pos.coords.latitude,
+                };
+
+                lastUserLocation.current = lngLat;
 
                 if (!userMarker.current) {
                     userMarker.current = new maplibregl.Marker({
                         element: createUserMarkerElement(),
                     })
-                        .setLngLat(lngLat)
+                        .setLngLat([lngLat.lng, lngLat.lat])
                         .addTo(mapInstance.current!);
                 } else {
-                    userMarker.current.setLngLat(lngLat);
+                    userMarker.current.setLngLat([lngLat.lng, lngLat.lat]);
                 }
             },
             err => console.error('GPS error', err),
             { enableHighAccuracy: true, maximumAge: 2000 }
         );
+
     };
 
     const stopTrackingUser = () => {
@@ -296,18 +301,16 @@ export default function MapView() {
 
         mapInstance.current.on('load', () => {
             startTrackingUser();
-            recenterMap();
             fetchRoute();
             drawGeoJson();
         });
     };
 
-    const recenterMap = async () => {
+    const goToInMap = async (center: any, zoom: number) => {
         if (!mapInstance.current) return;
 
         try {
-            const center = await getUserLocation();
-            mapInstance.current.easeTo({ center, zoom: 16, duration: 1000 });
+            mapInstance.current.easeTo({ center, zoom, duration: 1000 });
         } catch {
             console.warn('No se pudo recentrar');
         }
@@ -351,7 +354,7 @@ export default function MapView() {
 
     useEffect(() => {
         if (id) {
-            globalStore.DispatchAction(APP_ID, domainMapSlice.actions.findOneReducer({ id }));
+            globalStore.DispatchAction(APP_ID, routeMapSlice.actions.findOneReducer({ id }));
         }
     }, [id]);
 
@@ -369,7 +372,7 @@ export default function MapView() {
     }, [result.findOneResult]);
 
     useEffect(() => {
-        globalStore.DispatchAction(APP_ID, domainMapSlice.actions.clearReducer());
+        globalStore.DispatchAction(APP_ID, routeMapSlice.actions.clearReducer());
     }, []);
 
     return (
@@ -406,7 +409,20 @@ export default function MapView() {
                     </Tooltip>
 
                     <Tooltip title={t('domain_map_recenter_button_tooltip')} arrow>
-                        <Button variant="outlined" onClick={recenterMap}>
+                        <Button
+                            variant="outlined"
+                            onClick={() => {
+                                if (!lastUserLocation.current) {
+                                    console.warn('Ubicación aún no disponible');
+                                    return;
+                                }
+
+                                goToInMap([
+                                    lastUserLocation.current.lng,
+                                    lastUserLocation.current.lat
+                                ], 16);
+                            }}
+                        >
                             <MyLocationIcon />
                         </Button>
                     </Tooltip>

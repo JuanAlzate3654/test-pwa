@@ -1,5 +1,5 @@
 
-export interface DomainMapModel {
+export interface RouteMapModel {
     id: string;
     group: string;
     key: string;
