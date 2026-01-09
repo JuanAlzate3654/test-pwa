@@ -1,6 +1,6 @@
 import { domainListSlice } from "@components/domain/domainList/_redux/domainListReducer";
-import type { DomainListGR } from "@components/domain/domainList/_redux/DomainListService";
 import { DomainListService } from "@components/domain/domainList/_redux/DomainListService";
+import type { DomainListModel } from "@components/domain/domainList/_redux/model";
 import { handleError } from "@integral-software/react-utilities";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import type { AxiosResponse } from "axios";
@@ -10,17 +10,13 @@ const domainListService = new DomainListService();
 
 export function* pageSage(action: any) {
     try {
-        const response: AxiosResponse<DomainListGR, any> = yield call(
+        const response: AxiosResponse<DomainListModel, any> = yield call(
             [domainListService, domainListService.find],
             action.payload
         )
-        if (response.data?.errors) {
-            yield put(domainListSlice.actions.pageErrorReducer(handleError(response.data.errors)));
-            return;
-        }
         yield put(domainListSlice.actions.pageSuccessReducer({
             pagination: action.payload,
-            page: response.data.domainPage,
+            page: response.data,
         })
         );
     } catch (e) {

@@ -1,11 +1,17 @@
-import { LateralDialog } from '@integral-software/react-utilities';
+import { domainMapSlice, type DomainMapStateModel } from '@components/domain/domainMap/_redux/domainMapReducer';
+import { globalStore, isSuccess, LateralDialog, LoadDiv2, useGlobalSelector } from '@integral-software/react-utilities';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Box, Button, Tooltip } from '@mui/material';
+import { APP_ID } from '@store/store';
 import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
-
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import './DomainMap.css';
+import PopupContent from './PopupContent';
 type Bounds = {
     minLon: number;
     minLat: number;
@@ -13,26 +19,34 @@ type Bounds = {
     maxLat: number;
 };
 
-type DomainMapProps = {
-    start?: [number, number];
-    end?: [number, number];
-    // ...otros props si necesitas
-};
-
-export default function MapView({ start, end }: DomainMapProps) {
+export default function MapView() {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const mapInstance = useRef<maplibregl.Map | null>(null);
     const userMarker = useRef<maplibregl.Marker | null>(null);
     const watchId = useRef<number | null>(null);
     const { t } = useTranslation();
+    const { id } = useParams();
+    const { result, domain } = useGlobalSelector<DomainMapStateModel>(APP_ID, ({ domainMap }) => domainMap);
+    const navigate = useNavigate();
 
+    const goToDetailEdit = () => {
+        void navigate(`${id}/detail-edit`, { relative: "route" });
+    };
+
+    const goToSurvey = () => {
+        void navigate(`${id}/survey`, { relative: "route" });
+    };
+
+    const goToEditRouteEvidence = () => {
+        void navigate(`${id}/edit-route-evidence`, { relative: "route" });
+    };
 
     async function getRoute(
         start: [number, number],
         end: [number, number]
     ) {
         const url = `https://router.project-osrm.org/route/v1/driving/` +
-            `${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+            `${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
         try {
             const res = await fetch(url);
             const data = await res.json();
@@ -87,8 +101,8 @@ export default function MapView({ start, end }: DomainMapProps) {
     };
 
     const fetchRoute = async () => {
-        if (start && end && mapInstance.current) {
-            const geometry = await getRoute(start, end);
+        if (domain?.start && domain?.end && mapInstance.current) {
+            const geometry = await getRoute(domain.start, domain.end);
             if (geometry) {
                 drawRoute(geometry);
             } else {
@@ -96,6 +110,70 @@ export default function MapView({ start, end }: DomainMapProps) {
             }
         }
     };
+
+    const drawGeoJson = async () => {
+        if (!mapInstance.current) return;
+        const map = mapInstance.current;
+
+        if (map.getLayer('geojson-polygon')) {
+            map.removeLayer('geojson-polygon');
+        }
+        if (map.getLayer('geojson-polygon-outline')) {
+            map.removeLayer('geojson-polygon-outline');
+        }
+        if (map.getSource('geojson-polygon')) {
+            map.removeSource('geojson-polygon');
+        }
+
+        map.addSource('geojson-polygon', {
+            type: 'geojson',
+            data: domain!.geojson
+        });
+
+        map.addLayer({
+            id: 'geojson-polygon',
+            type: 'fill',
+            source: 'geojson-polygon',
+            layout: {},
+            paint: {
+                'fill-color': '#ff9800',
+                'fill-opacity': 0.4
+            }
+        });
+
+        map.addLayer({
+            id: 'geojson-polygon-outline',
+            type: 'line',
+            source: 'geojson-polygon',
+            layout: {},
+            paint: {
+                'line-color': '#ff9800',
+                'line-width': 2
+            }
+        });
+
+        map.on('click', 'geojson-polygon', (e) => {
+            const feature = e.features && e.features[0];
+            if (!feature) return;
+            const coordinates = e.lngLat;
+            const props = feature.properties;
+            const popupContainer = document.createElement('div');
+            const root = ReactDOM.createRoot(popupContainer);
+            root.render(<PopupContent properties={props} goToDetailEdit={goToDetailEdit} goToSurvey={goToSurvey} goToEditRouteEvidence={goToEditRouteEvidence} />);
+
+            new maplibregl.Popup()
+                .setLngLat(coordinates)
+                .setDOMContent(popupContainer)
+                .addTo(map);
+        });
+
+        map.on('mouseenter', 'geojson-polygon', () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', 'geojson-polygon', () => {
+            map.getCanvas().style.cursor = '';
+        });
+    }
 
     const getCurrentBounds = (): Bounds | null => {
         if (!mapInstance.current) return null;
@@ -220,6 +298,7 @@ export default function MapView({ start, end }: DomainMapProps) {
             startTrackingUser();
             recenterMap();
             fetchRoute();
+            drawGeoJson();
         });
     };
 
@@ -271,15 +350,26 @@ export default function MapView({ start, end }: DomainMapProps) {
     }
 
     useEffect(() => {
-        destroyMap();
-        const timeoutId = setTimeout(() => {
-            loadMap();
-        }, 100);
+        if (id) {
+            globalStore.DispatchAction(APP_ID, domainMapSlice.actions.findOneReducer({ id }));
+        }
+    }, [id]);
 
-        return () => {
-            clearTimeout(timeoutId);
-            destroyMap();
-        };
+    useEffect(() => {
+        if (isSuccess(result.findOneResult)) {
+            const timeoutId = setTimeout(() => {
+                loadMap();
+            }, 100);
+
+            return () => {
+                clearTimeout(timeoutId);
+                destroyMap();
+            };
+        }
+    }, [result.findOneResult]);
+
+    useEffect(() => {
+        globalStore.DispatchAction(APP_ID, domainMapSlice.actions.clearReducer());
     }, []);
 
     return (
@@ -296,7 +386,7 @@ export default function MapView({ start, end }: DomainMapProps) {
                             const z = Math.floor(mapInstance.current.getZoom());
                             for (let zoom = z - 1; zoom <= z + 1; zoom++) {
                                 await downloadTiles(bounds, zoom);
-                                await downloadRoute(start!, end!);
+                                await downloadRoute(domain!.start, domain!.end);
                             }
                         }}
                     >
@@ -323,12 +413,15 @@ export default function MapView({ start, end }: DomainMapProps) {
                 </Box>
             }
         >
-            <Box ref={mapRef} style={{
-                width: '100%',
-                height: '100%',
-                overflow: 'hidden',
-                padding: 0
-            }} />
+            <LoadDiv2 result={result.findOneResult}>
+                <Box ref={mapRef} style={{
+                    width: '100%',
+                    height: '100%',
+                    overflow: 'hidden',
+                    padding: 0
+                }} />
+            </LoadDiv2>
+            <Outlet />
         </LateralDialog>
     );
 }

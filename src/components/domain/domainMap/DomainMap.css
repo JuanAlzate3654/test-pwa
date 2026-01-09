@@ -1,0 +1,10 @@
+.maplibregl-popup-content {
+    background-color: #23272f !important;
+    min-width: 240px !important;
+    padding: 12px !important;
+}
+
+.maplibregl-popup-tip {
+    border-top-color: #23272f !important;
+    border-bottom-color: #23272f !important;
+}

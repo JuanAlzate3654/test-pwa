@@ -2,8 +2,12 @@ import { domainEditSlice } from "@components/domain/domainEdit/_redux/domainEdit
 import { domainEdit_WatchAsync } from "@components/domain/domainEdit/_redux/domainEditSaga";
 import { domainListSlice } from "@components/domain/domainList/_redux/domainListReducer";
 import { domainList_WatchAsync } from "@components/domain/domainList/_redux/domainListSaga";
+import { domainMapSlice } from "@components/domain/domainMap/_redux/domainMapReducer";
+import { domainMap_WatchAsync } from "@components/domain/domainMap/_redux/domainMapSaga";
 import { domainNewSlice } from "@components/domain/domainNew/_redux/domainNewReducer";
 import { domainNew_WatchAsync } from "@components/domain/domainNew/_redux/domainNewSaga";
+import { routeDetailEditSlice } from "@components/domain/routeDetailEdit/_redux/routeDetailEditReducer";
+import { routeDetailEdit_WatchAsync } from "@components/domain/routeDetailEdit/_redux/routeDetailEditSaga";
 import { linearProgressApplySlice } from "@components/home/linearprogress/_redux/linearProgressReducer";
 import { linearProgress_WatchAsync } from "@components/home/linearprogress/_redux/linearProgressSaga";
 import { userSlice } from "@components/user/_redux/userReducer";
@@ -25,6 +29,8 @@ const localReducer = {
     domainList: domainListSlice.reducer,
     domainNew: domainNewSlice.reducer,
     domainEdit: domainEditSlice.reducer,
+    domainMap: domainMapSlice.reducer,
+    routeDetailEdit: routeDetailEditSlice.reducer,
 }
 
 const localWatchSaga = [
@@ -33,6 +39,8 @@ const localWatchSaga = [
     domainList_WatchAsync,
     domainNew_WatchAsync,
     domainEdit_WatchAsync,
+    domainMap_WatchAsync,
+    routeDetailEdit_WatchAsync,
 ]
 
 export const store = configureStore({

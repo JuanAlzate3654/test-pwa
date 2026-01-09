@@ -56,7 +56,7 @@ export default function DomainListMenu({ domain }: DomainListMenuProps) {
     };
 
     const goToMap = () => {
-        void navigate('map', { state: { start: domain.start, end: domain.end } });
+        void navigate(`${domain.id}/map`, { relative: "route" });
         closeMenu();
     };
 
