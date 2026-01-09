@@ -4,7 +4,7 @@ import axios from "axios";
 
 export class RouteMapService {
 
-    url = (import.meta.env.VITE_API_URL || '') + '/v1/domains';
+    url = (import.meta.env.VITE_API_URL || '') + 'api/v1/domains';
 
     find(id: string): Promise<RouteMapModel> {
         return axios.get(`${this.url}/${id}`)

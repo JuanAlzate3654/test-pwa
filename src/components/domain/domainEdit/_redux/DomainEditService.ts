@@ -10,7 +10,7 @@ export interface DomainEditGR {
 
 export class DomainEditService {
 
-    url = (import.meta.env.VITE_API_URL || '') + '/v1/domains';
+    url = (import.meta.env.VITE_API_URL || '') + 'api/v1/domains';
 
     find(group: string, key: string): Promise<DomainEditModel> {
         try {
@@ -35,7 +35,7 @@ export class DomainEditService {
 
 
     update(domain: DomainEditModel): Promise<DomainEditGR> {
-        return fetch(`/api/v1/domains/groups/${domain.group}/keys/${domain.key}`, {
+        return fetch(`${this.url}/groups/${domain.group}/keys/${domain.key}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

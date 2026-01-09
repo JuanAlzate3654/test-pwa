@@ -16,7 +16,7 @@ export function* pageSage(action: any) {
         )
         yield put(domainListSlice.actions.pageSuccessReducer({
             pagination: action.payload,
-            page: response.data,
+            page: response,
         })
         );
     } catch (e) {

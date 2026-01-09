@@ -59,6 +59,21 @@ export default defineConfig(({ mode }) => {
                             },
                         },
                         {
+                            urlPattern: /^\/api\/v1\/.*$/,
+                            handler: 'NetworkFirst',
+                            options: {
+                                cacheName: 'api-v1-cache',
+                                networkTimeoutSeconds: 5,
+                                expiration: {
+                                    maxEntries: 200,
+                                    maxAgeSeconds: 60 * 60 * 24 * 7, // 7 días
+                                },
+                                cacheableResponse: {
+                                    statuses: [0, 200],
+                                },
+                            },
+                        },
+                        {
                             urlPattern: ({ url }) =>
                                 url.origin.includes('tile.openstreetmap.org'),
                             handler: 'CacheFirst',

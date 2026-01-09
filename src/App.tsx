@@ -66,7 +66,7 @@ const App = () => {
                     formData.append(image.field, blob, image.name);
                 });
 
-                const url = (import.meta.env.VITE_API_URL || '/api') + '/v1/domains';
+                const url = (import.meta.env.VITE_API_URL || '') + 'api/v1/domains';
 
                 await fetch(url, {
                     method: req.method,
