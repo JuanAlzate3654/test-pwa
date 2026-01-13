@@ -22,8 +22,8 @@ export const menus: Array<GroupModel> = [
                 link: "#",
                 subMenu: [
                     {
-                        id: "config_domain",
-                        name: t("shell_menu_config_domain_title"),
+                        id: "config_route",
+                        name: t("shell_menu_config_route_title"),
                         icon: "radio_button_unchecked",
                         link: "/config",
                         subMenu: [],

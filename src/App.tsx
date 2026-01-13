@@ -1,5 +1,7 @@
-import DomainRoutes from "@components/domain/DomainRoutes";
+import "./index.css";
+
 import Dashboard from "@components/home/dashboard/Dashboard";
+import RouteRoutes from "@components/route/RouteRoutes";
 import { ThemeProvider } from "@mui/material";
 import type { OfflineFile } from "@openDB/model";
 import { dbPromise } from "@openDB/openDB";
@@ -9,10 +11,10 @@ import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { toast, ToastContainer } from 'react-toastify';
+
 import Home from "./components/home/Home";
 import LinearProgressBar from "./components/home/linearprogress/LinearProgressBar";
 import Code404 from "./core/libraries/httpstatuscodes/Code404";
-import "./index.css";
 import { store } from "./store/store";
 import { darkTheme, lightTheme } from "./theme/customPalette";
 const App = () => {
@@ -66,7 +68,7 @@ const App = () => {
                     formData.append(image.field, blob, image.name);
                 });
 
-                const url = (import.meta.env.VITE_API_URL || '') + 'api/v1/domains';
+                const url = (import.meta.env.VITE_API_URL || '') + 'api/v1/routes';
 
                 await fetch(url, {
                     method: req.method,
@@ -106,7 +108,7 @@ const App = () => {
                                 path="/config/*"
                                 element={
                                     <Suspense fallback={"🌀 Loading"}>
-                                        <DomainRoutes />
+                                        <RouteRoutes />
                                     </Suspense>
                                 }
                             />

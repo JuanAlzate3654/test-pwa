@@ -48,12 +48,12 @@ export class PaginationModel {
      * @returns Retorna la página requerida
      */
     public addOther(key: string, value: string | string[]): PaginationModel {
-        const index = this.others?.findIndex(({key: k}) => k === key);
+        const index = this.others?.findIndex(({ key: k }) => k === key);
 
         if (index !== -1) {
-            this.others[index] = {key, value};
+            this.others![index!] = { key, value };
         } else {
-            this.others?.push({key, value});
+            this.others?.push({ key, value });
         }
 
         return this;
@@ -68,14 +68,14 @@ export class PaginationModel {
     public getOther(key: string): any {
         let other = this.others?.find(value => value.key === key);
         if (!other) {
-            other = {key, value: []};
+            other = { key, value: [] };
         }
 
         return other;
     }
 
     public getOthers(): Array<{ key: string, value: string | string[] }> {
-        return [...this.others];
+        return [...this.others!];
     }
 
     /**
@@ -88,8 +88,8 @@ export class PaginationModel {
      * @param sortColumn  Columna por la cual se ordena
      * @returns Retorna una paginación requerida
      */
-    public toRequest(): any {
-        const request = {
+    public toRequest(): Record<string, any> {
+        const request: Record<string, any> = {
             query: this.query,
             page: String(this.page),
             size: String(this.size),
@@ -97,7 +97,7 @@ export class PaginationModel {
             sortColumn: this.sortColumn
         };
 
-        this.others?.forEach(({key, value}) => request[key] = value);
+        this.others?.forEach(({ key, value }) => request[key] = value);
 
         return request;
     }

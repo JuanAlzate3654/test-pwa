@@ -1,19 +1,17 @@
-import { domainEditSlice } from "@components/domain/domainEdit/_redux/domainEditReducer";
-import { domainEdit_WatchAsync } from "@components/domain/domainEdit/_redux/domainEditSaga";
-import { domainListSlice } from "@components/domain/domainList/_redux/domainListReducer";
-import { domainList_WatchAsync } from "@components/domain/domainList/_redux/domainListSaga";
-import { domainNewSlice } from "@components/domain/domainNew/_redux/domainNewReducer";
-import { domainNew_WatchAsync } from "@components/domain/domainNew/_redux/domainNewSaga";
-import { routeDetailEditSlice } from "@components/domain/routeDetailEdit/_redux/routeDetailEditReducer";
-import { routeDetailEdit_WatchAsync } from "@components/domain/routeDetailEdit/_redux/routeDetailEditSaga";
-import { routeEvidenceEditSlice } from "@components/domain/routeEvidenceEdit/_redux/routeEvidenceEditReducer";
-import { routeEvidenceEdit_WatchAsync } from "@components/domain/routeEvidenceEdit/_redux/routeEvidenceEditSaga";
-import { routeMapSlice } from "@components/domain/routeMap/_redux/routeMapReducer";
-import { routeMap_WatchAsync } from "@components/domain/routeMap/_redux/routeMapSaga";
-import { routeSurveySlice } from "@components/domain/routeSurvey/_redux/routeSurveyReducer";
-import { routeSurvey_WatchAsync } from "@components/domain/routeSurvey/_redux/routeSurveySaga";
 import { linearProgressApplySlice } from "@components/home/linearprogress/_redux/linearProgressReducer";
 import { linearProgress_WatchAsync } from "@components/home/linearprogress/_redux/linearProgressSaga";
+import { routeDetailEditSlice } from "@components/route/routeDetailEdit/_redux/routeDetailEditReducer";
+import { routeDetailEdit_WatchAsync } from "@components/route/routeDetailEdit/_redux/routeDetailEditSaga";
+import { routeEditSlice } from "@components/route/routeEdit/_redux/routeEditReducer";
+import { routeEdit_WatchAsync } from "@components/route/routeEdit/_redux/routeEditSaga";
+import { routeEvidenceEditSlice } from "@components/route/routeEvidenceEdit/_redux/routeEvidenceEditReducer";
+import { routeEvidenceEdit_WatchAsync } from "@components/route/routeEvidenceEdit/_redux/routeEvidenceEditSaga";
+import { routeListSlice } from "@components/route/routeList/_redux/routeListReducer";
+import { routeList_WatchAsync } from "@components/route/routeList/_redux/routeListSaga";
+import { routeMapSlice } from "@components/route/routeMap/_redux/routeMapReducer";
+import { routeMap_WatchAsync } from "@components/route/routeMap/_redux/routeMapSaga";
+import { routeSurveySlice } from "@components/route/routeSurvey/_redux/routeSurveyReducer";
+import { routeSurvey_WatchAsync } from "@components/route/routeSurvey/_redux/routeSurveySaga";
 import { userSlice } from "@components/user/_redux/userReducer";
 import { user_WatchAsync } from "@components/user/_redux/userSaga";
 import { GlobalStore } from '@integral-software/redux-micro-frontend';
@@ -30,9 +28,8 @@ const sagaMiddleware = createSagaMiddleware();
 const localReducer = {
     user: userSlice.reducer,
     linearProgress: linearProgressApplySlice.reducer,
-    domainList: domainListSlice.reducer,
-    domainNew: domainNewSlice.reducer,
-    domainEdit: domainEditSlice.reducer,
+    routeList: routeListSlice.reducer,
+    routeEdit: routeEditSlice.reducer,
     routeMap: routeMapSlice.reducer,
     routeDetailEdit: routeDetailEditSlice.reducer,
     routeEvidenceEdit: routeEvidenceEditSlice.reducer,
@@ -42,9 +39,8 @@ const localReducer = {
 const localWatchSaga = [
     user_WatchAsync,
     linearProgress_WatchAsync,
-    domainList_WatchAsync,
-    domainNew_WatchAsync,
-    domainEdit_WatchAsync,
+    routeList_WatchAsync,
+    routeEdit_WatchAsync,
     routeMap_WatchAsync,
     routeDetailEdit_WatchAsync,
     routeEvidenceEdit_WatchAsync,

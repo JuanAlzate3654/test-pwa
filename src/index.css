@@ -49,3 +49,8 @@ textarea:focus {
 .modal-open {
     overflow: hidden !important;
 }
+
+.MuiDataGrid-cell.MuiDataGrid-cell--textLeft {
+    display: flex;
+    align-items: center;
+}
