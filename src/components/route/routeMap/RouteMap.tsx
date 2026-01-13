@@ -12,14 +12,7 @@ import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
-
 import PopupContent from './PopupContent';
-type Bounds = {
-    minLon: number;
-    minLat: number;
-    maxLon: number;
-    maxLat: number;
-};
 
 export default function MapView() {
     const mapRef = useRef<HTMLDivElement | null>(null);
@@ -31,7 +24,12 @@ export default function MapView() {
     const { result, route } = useGlobalSelector<RouteMapStateModel>(APP_ID, ({ routeMap }) => routeMap);
     const lastUserLocation = useRef<{ lng: number; lat: number } | null>(null);
     const navigate = useNavigate();
-
+    type Bounds = {
+        minLon: number;
+        minLat: number;
+        maxLon: number;
+        maxLat: number;
+    };
     const goToDetailEdit = () => {
         void navigate(`${id}/detail-edit`, { relative: "route" });
     };
@@ -365,6 +363,7 @@ export default function MapView() {
             sx={{ overflow: 'hidden', padding: 0 }}
             Sticky={
                 <Box sx={{ display: 'flex', gap: 1 }}>
+
                     <Button
                         onClick={async () => {
                             const bounds = getCurrentBounds();
