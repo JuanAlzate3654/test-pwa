@@ -2,7 +2,6 @@ import RouteDetailEdit from "@components/route/routeDetailEdit/RouteDetailEdit";
 import RouteEdit from "@components/route/routeEdit/RouteEdit";
 import RouteEvidenceEdit from "@components/route/routeEvidenceEdit/RouteEvidenceEdit";
 import RouteList from "@components/route/routeList/RouteList";
-import MapView from "@components/route/routeMap/RouteMap";
 import RouteSurvey from "@components/route/routeSurvey/RouteSurvey";
 import { RouterWithDialog } from "@integral-software/react-utilities";
 import { Suspense } from 'react';
@@ -23,31 +22,24 @@ export default function RouteRoutes() {
                             <RouteEdit />
                         </Suspense>
                     } />
-                <Route path=":id/map"
+                <Route path=":id/detail-edit"
                     element={
                         <Suspense fallback={"🌀 Loading"}>
-                            <MapView />
+                            <RouteDetailEdit />
                         </Suspense>
-                    }>
-                    <Route path=":id/detail-edit"
-                        element={
-                            <Suspense fallback={"🌀 Loading"}>
-                                <RouteDetailEdit />
-                            </Suspense>
-                        } />
-                    <Route path=":id/evidence-edit"
-                        element={
-                            <Suspense fallback={"🌀 Loading"}>
-                                <RouteEvidenceEdit />
-                            </Suspense>
-                        } />
-                    <Route path=":id/survey"
-                        element={
-                            <Suspense fallback={"🌀 Loading"}>
-                                <RouteSurvey />
-                            </Suspense>
-                        } />
-                </Route>
+                    } />
+                <Route path=":id/evidence-edit"
+                    element={
+                        <Suspense fallback={"🌀 Loading"}>
+                            <RouteEvidenceEdit />
+                        </Suspense>
+                    } />
+                <Route path=":id/survey"
+                    element={
+                        <Suspense fallback={"🌀 Loading"}>
+                            <RouteSurvey />
+                        </Suspense>
+                    } />
             </Route>
         </Routes>
     );

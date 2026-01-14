@@ -2,6 +2,7 @@ import type { RouteEditStateModel } from "@components/route/routeEdit/_redux/rou
 import type { RouteListModel } from "@components/route/routeList/_redux/model";
 import type { RouteListStateModel } from "@components/route/routeList/_redux/routeListReducer";
 import { routeListSlice } from "@components/route/routeList/_redux/routeListReducer";
+import MapView from "@components/route/routeMap/RouteMap";
 import {
     isLoading,
     isSuccess,
@@ -10,6 +11,7 @@ import {
     useTable
 } from "@integral-software/react-utilities";
 import { GlobalStore } from '@integral-software/redux-micro-frontend';
+import MapIcon from '@mui/icons-material/Map';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Button, FormControl, InputAdornment, Paper, TextField, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -18,20 +20,21 @@ import { DataGrid } from "@mui/x-data-grid";
 import { useEffect, useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { APP_ID } from "src/store/store";
-
 import RouteListMenu from "./RouteListMenu";
+
 export default function RouteList() {
 
     const { t } = useTranslation();
 
     const [filterCBML, setFilterCBML] = useState("");
-
+    const [mapIsActive, setMapIsActive] = useState(false);
     const handleChange = (event: any) => {
         const value = event.target.value;
         if (/^\d*$/.test(value)) {
             setFilterCBML(value);
         }
     };
+
     const theme = useTheme()
     const isGeSm = useMediaQuery(theme.breakpoints.up('sm'));
     const globalStore = GlobalStore.Get();
@@ -42,8 +45,8 @@ export default function RouteList() {
         selectionColumn, props, prepareRequest, selectedModel
     } = useTable<RouteListModel>({
         isUpdating: () => isLoading(result.pageResult),
-        multiple: false,
-        getId: (row) => row.id,
+        multiple: true,
+        getId: (row) => row.cbml,
         onSortModelChange: () => {
             loadCapabilitiesList()
         },
@@ -71,7 +74,7 @@ export default function RouteList() {
                             input: {
                                 endAdornment: (
                                     <InputAdornment position='end'>
-                                        <RouteListMenu route={params.row} />
+                                        <RouteListMenu route={params.row} setMapIsActive={setMapIsActive} />
                                     </InputAdornment>
                                 )
                             }
@@ -118,7 +121,7 @@ export default function RouteList() {
         {
             renderCell: (value) => {
                 return (
-                    (selectedModel.firstSelected() == value.row.id) && <RouteListMenu route={value.row} />
+                    (selectedModel.firstSelected() == value.row.cbml && selectedModel.selected.length === 1) && <RouteListMenu route={value.row} setMapIsActive={setMapIsActive} />
                 );
             },
             field: 'opt', headerName: '', width: 50, sortable: false, resizable: false
@@ -215,6 +218,16 @@ export default function RouteList() {
                             <RefreshIcon />
                         </Button>
                     </Tooltip>
+                    <Tooltip title={t("route_list_map_button_tooltip")} arrow>
+                        <Button disabled={selectedModel.selected.length <= 1} sx={{
+                            height: "52px"
+                        }} variant='outlined'
+                            onClick={() => {
+                                setMapIsActive(true);
+                            }}>
+                            <MapIcon />
+                        </Button>
+                    </Tooltip>
                 </Box>
                 <FormControl sx={{ width: isGeSm ? 220 : "100%" }}>
                     <TextField
@@ -242,6 +255,9 @@ export default function RouteList() {
                 loading={isLoading(result.pageResult)}
                 hideFooterSelectedRowCount={true}
                 disableColumnMenu={true} />
+            {mapIsActive &&
+                <MapView cbmls={selectedModel.selected} setMapIsActive={setMapIsActive} />
+            }
         </Box>
     );
 }

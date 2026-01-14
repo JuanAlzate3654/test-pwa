@@ -8,11 +8,11 @@ import { all, call, put, takeEvery } from "redux-saga/effects";
 
 const routeMapService = new RouteMapService();
 
-export function* findOneSaga(action: PayloadAction<{ id: string }>) {
+export function* findOneSaga(action: PayloadAction<{ cbmls: string[] }>) {
     try {
         const response: AxiosResponse<RouteMapModel, any> = yield call(
             [routeMapService, routeMapService.find],
-            action.payload.id
+            action.payload.cbmls
         )
         yield put(
             routeMapSlice.actions.findOneSuccessReducer(response.data)

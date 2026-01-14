@@ -8,9 +8,9 @@ import React from "react";
 import { useTranslation } from 'react-i18next';
 export interface PopupContentProps {
   properties: any;
-  goToDetailEdit: () => void;
-  goToSurvey: () => void;
-  goToEditRouteEvidence: () => void;
+  goToDetailEdit: (id: string) => void;
+  goToSurvey: (id: string) => void;
+  goToEditRouteEvidence: (id: string) => void;
 }
 
 const PopupContent: React.FC<PopupContentProps> = ({ properties, goToDetailEdit, goToSurvey, goToEditRouteEvidence }) => {
@@ -30,9 +30,20 @@ const PopupContent: React.FC<PopupContentProps> = ({ properties, goToDetailEdit,
         gap: 1,
         paddingX: 2
       }}>
-        {Object.entries(properties).map(([key, value]) => (
-          <li key={key}><b>{key}:</b> {String(value)}</li>
-        ))}
+        {Object.entries(properties)
+          .filter(([key]) => [
+            "fid",
+            "cbml",
+            "longitud",
+            "latitud",
+            "x_origen",
+            "y_origen",
+            "fecha",
+            "tecnico"
+          ].includes(key))
+          .map(([key, value]) => (
+            <li key={key}><b>{key}:</b> {String(value)}</li>
+          ))}
       </Box>
 
       <Box sx={{
@@ -40,7 +51,7 @@ const PopupContent: React.FC<PopupContentProps> = ({ properties, goToDetailEdit,
         flexDirection: "row",
         justifyContent: "space-between"
       }}>
-        <Button onClick={() => goToDetailEdit()} variant="outlined" sx={{
+        <Button onClick={() => goToDetailEdit(properties.cbml)} variant="outlined" sx={{
         }}>
           {properties.bitacoraActividades.includes("VISITADA") && (
             <CheckIcon
@@ -56,7 +67,7 @@ const PopupContent: React.FC<PopupContentProps> = ({ properties, goToDetailEdit,
           )}
           <ModeEditIcon />
         </Button>
-        <Button onClick={() => goToEditRouteEvidence()} variant="outlined" sx={{
+        <Button onClick={() => goToEditRouteEvidence(properties.cbml)} variant="outlined" sx={{
         }}>
           {properties.bitacoraActividades.includes("EVIDENCIA") && (
             <CheckIcon
@@ -72,7 +83,7 @@ const PopupContent: React.FC<PopupContentProps> = ({ properties, goToDetailEdit,
           )}
           <AddAPhotoIcon />
         </Button>
-        <Button onClick={() => goToSurvey()} variant="outlined" sx={{
+        <Button onClick={() => goToSurvey(properties.cbml)} variant="outlined" sx={{
         }}>
           {properties.bitacoraActividades.includes("ENCUESTA") && (
             <CheckIcon

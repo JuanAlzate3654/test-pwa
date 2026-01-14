@@ -13,7 +13,7 @@ import { createSlice } from "@reduxjs/toolkit";
 type routeMapResultType = "clearResult" | "findOneResult";
 
 export interface RouteMapStateModel {
-    route?: RouteMapModel;
+    routes?: RouteMapModel[];
     result: Record<routeMapResultType, ResultModel>;
 }
 
@@ -31,7 +31,7 @@ export const routeMapSlice = createSlice({
     initialState: defaultState(),
     reducers: {
         clearReducer: () => defaultState(),
-        findOneReducer: (state, action: PayloadAction<{ id: string }>) => ({
+        findOneReducer: (state, action: PayloadAction<{ cbmls: string[] }>) => ({
             ...state,
             result: {
                 ...mergeResultWithLoading<routeMapResultType>(state, action, "findOneResult")
@@ -39,7 +39,7 @@ export const routeMapSlice = createSlice({
         }),
         findOneSuccessReducer: (state, action) => ({
             ...state,
-            route: action.payload,
+            routes: action.payload,
             result: {
                 ...mergeResultWithSuccess<routeMapResultType>(state, action, "findOneResult"),
             },

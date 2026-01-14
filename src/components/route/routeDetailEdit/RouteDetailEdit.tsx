@@ -32,8 +32,13 @@ export default function RouteDetailEdit() {
     }, [id]);
 
     const estadoOptions = [
-        { key: "PENDIENTE", value: "PENDIENTE" },
         { key: "VISITADA", value: "VISITADA" },
+        { key: "PENDIENTE", value: "PENDIENTE" },
+    ];
+
+    const principalOptions = [
+        { key: "SI", value: "si" },
+        { key: "NO", value: "no" },
     ];
 
     const formik = useFormik<RouteDetailEditModel>({
@@ -103,33 +108,57 @@ export default function RouteDetailEdit() {
                         </FormControl>
                     </Tooltip>
 
+                    <Tooltip title={t("route_detail_edit_cbml_tooltip")} arrow>
+                        <FormControl variant="filled">
+                            <TextField label={t("route_detail_edit_cbml")} disabled autoComplete={"off"} {...formikInputProps("cbml", formik)} />
+                        </FormControl>
+                    </Tooltip>
+
                     <Tooltip title={t("route_detail_edit_matricula_tooltip")} arrow>
                         <FormControl variant="filled">
-                            <TextField label={t("route_detail_edit_matricula")} autoComplete={"off"} {...formikInputProps("matricula", formik)} />
+                            <TextField label={t("route_detail_edit_matricula")} disabled autoComplete={"off"} {...formikInputProps("matricula", formik)} />
                         </FormControl>
                     </Tooltip>
 
                     <Tooltip title={t("route_detail_edit_estrato_tooltip")} arrow>
                         <FormControl variant="filled">
-                            <TextField label={t("route_detail_edit_estrato")} autoComplete={"off"} {...formikInputProps("estrato", formik)} />
+                            <TextField label={t("route_detail_edit_estrato")} disabled autoComplete={"off"} {...formikInputProps("estrato", formik)} />
                         </FormControl>
                     </Tooltip>
 
                     <Tooltip title={t("route_detail_edit_descripcion_tooltip")} arrow>
                         <FormControl variant="filled">
-                            <TextField label={t("route_detail_edit_descripcion")} autoComplete={"off"} {...formikInputProps("descripcion", formik)} />
+                            <TextField label={t("route_detail_edit_descripcion")} disabled autoComplete={"off"} {...formikInputProps("descripcion", formik)} />
                         </FormControl>
                     </Tooltip>
 
-                    <Tooltip title={t("route_detail_edit_direccionEncasillada_tooltip")} arrow>
+                    <Tooltip title={t("route_detail_edit_direccion_encasillada_tooltip")} arrow>
                         <FormControl variant="filled">
-                            <TextField label={t("route_detail_edit_direccionEncasillada")} autoComplete={"off"} {...formikInputProps("direccionEncasillada", formik)} />
+                            <TextField label={t("route_detail_edit_direccion_encasillada")} autoComplete={"off"} {...formikInputProps("direccionEncasillada", formik)} />
                         </FormControl>
                     </Tooltip>
 
-                    <Tooltip title={t("route_detail_edit_nomenclaturaEpm_tooltip")} arrow>
+                    <Tooltip title={t("route_detail_edit_principal_tooltip")} arrow>
                         <FormControl variant="filled">
-                            <TextField label={t("route_detail_edit_nomenclaturaEpm")} autoComplete={"off"} {...formikInputProps("nomenclaturaEpm", formik)} />
+                            <TextField
+                                select
+                                label={t("route_detail_edit_principal")}
+                                autoComplete={"off"}
+                                {...formikInputProps("principal", formik)}
+                                value={formik.values.principal}
+                            >
+                                {principalOptions.map(option => (
+                                    <MenuItem key={option.key} value={option.key}>
+                                        {option.value}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </FormControl>
+                    </Tooltip>
+
+                    <Tooltip title={t("route_detail_edit_nomenclatura_epm_tooltip")} arrow>
+                        <FormControl variant="filled">
+                            <TextField label={t("route_detail_edit_nomenclatura_epm")} autoComplete={"off"} {...formikInputProps("nomenclaturaEpm", formik)} />
                         </FormControl>
                     </Tooltip>
 
@@ -139,18 +168,22 @@ export default function RouteDetailEdit() {
                         </FormControl>
                     </Tooltip>
 
-                    <Tooltip title={t("tramites_edit_procedure_type_tooltip")} arrow>
-                        <TextField
-                            select
-                            label={t("tramites_edit_procedure_type")}
-                            {...formikInputProps("estado", formik)}
-                            value={formik.values.estado}
-                            autoComplete="off"
-                        >
-                            {estadoOptions.map(estadoOption => (
-                                <MenuItem key={estadoOption.key} value={estadoOption.key}>{estadoOption.value}</MenuItem>
-                            ))}
-                        </TextField>
+                    <Tooltip title={t("route_detail_edit_estado_tooltip")} arrow>
+                        <FormControl variant="filled">
+                            <TextField
+                                select
+                                label={t("route_detail_edit_estado")}
+                                autoComplete={"off"}
+                                {...formikInputProps("estado", formik)}
+                                value={formik.values.estado}
+                            >
+                                {estadoOptions.map(option => (
+                                    <MenuItem key={option.key} value={option.key}>
+                                        {option.value}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+                        </FormControl>
                     </Tooltip>
                 </Box>
             </LoadDiv2>

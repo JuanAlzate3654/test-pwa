@@ -11,17 +11,21 @@ import maplibregl from 'maplibre-gl';
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
-import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import PopupContent from './PopupContent';
 
-export default function MapView() {
+export interface MapViewProps {
+    cbmls: string[];
+    setMapIsActive: (isActive: boolean) => void;
+}
+
+export default function MapView({ cbmls, setMapIsActive }: MapViewProps) {
     const mapRef = useRef<HTMLDivElement | null>(null);
     const mapInstance = useRef<maplibregl.Map | null>(null);
     const userMarker = useRef<maplibregl.Marker | null>(null);
     const watchId = useRef<number | null>(null);
     const { t } = useTranslation();
-    const { id } = useParams();
-    const { result, route } = useGlobalSelector<RouteMapStateModel>(APP_ID, ({ routeMap }) => routeMap);
+    const { result, routes } = useGlobalSelector<RouteMapStateModel>(APP_ID, ({ routeMap }) => routeMap);
     const lastUserLocation = useRef<{ lng: number; lat: number } | null>(null);
     const navigate = useNavigate();
     type Bounds = {
@@ -30,15 +34,15 @@ export default function MapView() {
         maxLon: number;
         maxLat: number;
     };
-    const goToDetailEdit = () => {
+    const goToDetailEdit = (id: string) => {
         void navigate(`${id}/detail-edit`, { relative: "route" });
     };
 
-    const goToEditRouteEvidence = () => {
+    const goToEditRouteEvidence = (id: string) => {
         void navigate(`${id}/evidence-edit`, { relative: "route" });
     };
 
-    const goToSurvey = () => {
+    const goToSurvey = (id: string) => {
         void navigate(`${id}/survey`, { relative: "route" });
     };
 
@@ -62,13 +66,13 @@ export default function MapView() {
         }
     }
 
-    const drawRoute = (geometry: GeoJSON.LineString) => {
+    const drawRoute = (cbml: string, geometry: GeoJSON.LineString) => {
         if (!mapInstance.current) return;
 
         const map = mapInstance.current;
 
-        if (map.getSource('route')) {
-            (map.getSource('route') as maplibregl.GeoJSONSource)
+        if (map.getSource(`route-${cbml}`)) {
+            (map.getSource(`route-${cbml}`) as maplibregl.GeoJSONSource)
                 .setData({
                     type: 'Feature',
                     geometry,
@@ -77,7 +81,7 @@ export default function MapView() {
             return;
         }
 
-        map.addSource('route', {
+        map.addSource(`route-${cbml}`, {
             type: 'geojson',
             data: {
                 type: 'Feature',
@@ -87,9 +91,9 @@ export default function MapView() {
         });
 
         map.addLayer({
-            id: 'route-layer',
+            id: `route-layer-${cbml}`,
             type: 'line',
-            source: 'route',
+            source: `route-${cbml}`,
             layout: {
                 'line-join': 'round',
                 'line-cap': 'round'
@@ -102,79 +106,94 @@ export default function MapView() {
     };
 
     const fetchRoute = async () => {
-        if (route?.start && route?.end && mapInstance.current) {
-            const geometry = await getRoute(route.start, route.end);
-            if (geometry) {
-                drawRoute(geometry);
-            } else {
-                console.warn('No se pudo dibujar la ruta: datos no válidos');
+        if (mapInstance.current) {
+
+            for (const route of routes!) {
+                const geometry = await getRoute(route.start!, route.end!);
+                if (geometry) {
+                    drawRoute(route.cbml, geometry);
+                } else {
+                    console.warn('No se pudo dibujar la ruta: datos no válidos');
+                }
             }
         }
     };
+
+    const getPolygonColor = (route: any) => {
+        if (route.geojson.properties.bitacoraActividades.length == 0) {
+            return "#b700ff"
+        }
+        else if (route.geojson.properties.bitacoraActividades.length <= 2) {
+            return "#ff9800"
+        }
+        return "#00ff40"
+    }
 
     const drawGeoJson = async () => {
         if (!mapInstance.current) return;
         const map = mapInstance.current;
 
-        if (map.getLayer('geojson-polygon')) {
-            map.removeLayer('geojson-polygon');
-        }
-        if (map.getLayer('geojson-polygon-outline')) {
-            map.removeLayer('geojson-polygon-outline');
-        }
-        if (map.getSource('geojson-polygon')) {
-            map.removeSource('geojson-polygon');
-        }
+        for (const route of routes!) {
 
-        map.addSource('geojson-polygon', {
-            type: 'geojson',
-            data: route!.geojson
-        });
-
-        map.addLayer({
-            id: 'geojson-polygon',
-            type: 'fill',
-            source: 'geojson-polygon',
-            layout: {},
-            paint: {
-                'fill-color': '#ff9800',
-                'fill-opacity': 0.4
+            if (map.getLayer(`geojson-polygon-${route.cbml}`)) {
+                map.removeLayer(`geojson-polygon-${route.cbml}`);
             }
-        });
-
-        map.addLayer({
-            id: 'geojson-polygon-outline',
-            type: 'line',
-            source: 'geojson-polygon',
-            layout: {},
-            paint: {
-                'line-color': '#ff9800',
-                'line-width': 2
+            if (map.getLayer(`geojson-polygon-outline-${route.cbml}`)) {
+                map.removeLayer(`geojson-polygon-outline-${route.cbml}`);
             }
-        });
+            if (map.getSource(`geojson-polygon-${route.cbml}`)) {
+                map.removeSource(`geojson-polygon-${route.cbml}`);
+            }
 
-        map.on('click', 'geojson-polygon', (e) => {
-            const feature = e.features && e.features[0];
-            if (!feature) return;
-            const coordinates = e.lngLat;
-            const props = feature.properties;
-            const popupContainer = document.createElement('div');
-            const root = ReactDOM.createRoot(popupContainer);
-            void goToInMap([coordinates.lng, coordinates.lat], 14);
-            root.render(<PopupContent properties={props} goToDetailEdit={goToDetailEdit} goToSurvey={goToSurvey} goToEditRouteEvidence={goToEditRouteEvidence} />);
+            map.addSource(`geojson-polygon-${route.cbml}`, {
+                type: 'geojson',
+                data: route.geojson
+            });
+            map.addLayer({
+                id: `geojson-polygon-${route.cbml}`,
+                type: 'fill',
+                source: `geojson-polygon-${route.cbml}`,
+                layout: {},
+                paint: {
+                    'fill-color': getPolygonColor(route),
+                    'fill-opacity': 0.4
+                }
+            });
 
-            new maplibregl.Popup()
-                .setLngLat(coordinates)
-                .setDOMContent(popupContainer)
-                .addTo(map);
-        });
+            map.addLayer({
+                id: `geojson-polygon-outline-${route.cbml}`,
+                type: 'line',
+                source: `geojson-polygon-${route.cbml}`,
+                layout: {},
+                paint: {
+                    'line-color': getPolygonColor(route),
+                    'line-width': 2
+                }
+            });
 
-        map.on('mouseenter', 'geojson-polygon', () => {
-            map.getCanvas().style.cursor = 'pointer';
-        });
-        map.on('mouseleave', 'geojson-polygon', () => {
-            map.getCanvas().style.cursor = '';
-        });
+            map.on('click', `geojson-polygon-${route.cbml}`, (e) => {
+                const feature = e.features && e.features[0];
+                if (!feature) return;
+                const coordinates = e.lngLat;
+                const props = feature.properties;
+                const popupContainer = document.createElement('div');
+                const root = ReactDOM.createRoot(popupContainer);
+                void goToInMap([coordinates.lng, coordinates.lat], 14);
+                root.render(<PopupContent properties={props} goToDetailEdit={goToDetailEdit} goToSurvey={goToSurvey} goToEditRouteEvidence={goToEditRouteEvidence} />);
+
+                new maplibregl.Popup()
+                    .setLngLat(coordinates)
+                    .setDOMContent(popupContainer)
+                    .addTo(map);
+            });
+
+            map.on('mouseenter', `geojson-polygon-${route.cbml}`, () => {
+                map.getCanvas().style.cursor = 'pointer';
+            });
+            map.on('mouseleave', `geojson-polygon-${route.cbml}`, () => {
+                map.getCanvas().style.cursor = '';
+            });
+        }
     }
 
     const getCurrentBounds = (): Bounds | null => {
@@ -319,26 +338,25 @@ export default function MapView() {
         }
     }
 
-    async function downloadRoute(
-        start: [number, number],
-        end: [number, number]
-    ) {
-        const url =
-            `https://router.project-osrm.org/route/v1/driving/` +
-            `${start[0]},${start[1]};${end[0]},${end[1]}?overview=full&geometries=geojson`;
+    async function downloadRoute() {
+        for (const route of routes!) {
+            const url =
+                `https://router.project-osrm.org/route/v1/driving/` +
+                `${route.start![0]},${route.start[1]};${route.end[0]},${route.end[1]}?overview=full&geometries=geojson`;
 
-        try {
-            await fetch(url, { cache: 'no-store' });
-        } catch (e) {
-            console.warn('No se pudo descargar la ruta', e);
+            try {
+                await fetch(url, { cache: 'no-store' });
+            } catch (e) {
+                console.warn('No se pudo descargar la ruta', e);
+            }
         }
     }
 
     useEffect(() => {
-        if (id) {
-            globalStore.DispatchAction(APP_ID, routeMapSlice.actions.findOneReducer({ id }));
+        if (cbmls) {
+            globalStore.DispatchAction(APP_ID, routeMapSlice.actions.findOneReducer({ cbmls: cbmls }));
         }
-    }, [id]);
+    }, [cbmls]);
 
     useEffect(() => {
         if (isSuccess(result.findOneResult)) {
@@ -361,6 +379,9 @@ export default function MapView() {
         <LateralDialog
             width={{ xs: '100%', sm: '100%', md: '100%' }}
             sx={{ overflow: 'hidden', padding: 0 }}
+            onClose={() => {
+                setMapIsActive(false);
+            }}
             Sticky={
                 <Box sx={{ display: 'flex', gap: 1 }}>
 
@@ -372,7 +393,7 @@ export default function MapView() {
                             const z = Math.floor(mapInstance.current.getZoom());
                             for (let zoom = z - 1; zoom <= z + 1; zoom++) {
                                 await downloadTiles(bounds, zoom);
-                                await downloadRoute(route!.start, route!.end);
+                                await downloadRoute();
                             }
                         }}
                     >

@@ -6,7 +6,7 @@ export class RouteMapService {
 
     url = (import.meta.env.VITE_API_URL || '') + 'api/v1/routes';
 
-    find(id: string): Promise<RouteMapModel> {
-        return axios.get(`${this.url}/${id}`)
+    find(cbmls: string[]): Promise<RouteMapModel> {
+        return axios.get(`${this.url}/routes`, { params: { cbmls } })
     }
 }
