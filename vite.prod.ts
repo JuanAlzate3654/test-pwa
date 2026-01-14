@@ -75,6 +75,18 @@ export default defineConfig(({ mode }) => {
                         },
                         {
                             urlPattern: ({ url }) =>
+                                url.origin.includes('router.project-osrm.org'),
+                            handler: 'CacheFirst',
+                            options: {
+                                cacheName: 'map-routes',
+                                expiration: {
+                                    maxEntries: 3000,
+                                    maxAgeSeconds: 60 * 60 * 24 * 30,
+                                },
+                            },
+                        },
+                        {
+                            urlPattern: ({ url }) =>
                                 url.origin.includes('tile.openstreetmap.org'),
                             handler: 'CacheFirst',
                             options: {
@@ -88,7 +100,7 @@ export default defineConfig(({ mode }) => {
                         {
                             urlPattern: ({ url }) =>
                                 url.origin.includes('router.project-osrm.org') &&
-                                url.pathname.startsWith('/route/v1/'),
+                                url.pathname.startsWith('api/v1/routes'),
                             handler: 'NetworkFirst',
                             options: {
                                 cacheName: 'osrm-routes',

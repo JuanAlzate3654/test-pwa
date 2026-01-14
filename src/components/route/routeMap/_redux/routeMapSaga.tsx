@@ -15,15 +15,58 @@ export function* findOneSaga(action: PayloadAction<{ cbmls: string[] }>) {
             action.payload.cbmls
         )
         yield put(
-            routeMapSlice.actions.findOneSuccessReducer(response.data)
+            routeMapSlice.actions.findOneSuccessReducer(response)
         );
     } catch (e) {
         yield put(routeMapSlice.actions.findOneErrorReducer(handleError(e)));
     }
 }
 
+export function* loadMapSaga() {
+    try {
+        yield call(
+            [routeMapService, routeMapService.loadMap]
+        )
+        yield put(
+            routeMapSlice.actions.loadMapSuccessReducer()
+        );
+    } catch (e) {
+        yield put(routeMapSlice.actions.loadMapErrorReducer(handleError(e)));
+    }
+}
+
+export function* downloadMapSaga(action: PayloadAction<{ bounds: any, zoom: number }>) {
+    try {
+        yield call(
+            [routeMapService, routeMapService.downloadMap],
+            action.payload.bounds, action.payload.zoom
+        )
+        yield put(
+            routeMapSlice.actions.downloadMapSuccessReducer()
+        );
+    } catch (e) {
+        yield put(routeMapSlice.actions.downloadMapErrorReducer(handleError(e)));
+    }
+}
+
+export function* downloadRoutesMapSaga(action: PayloadAction<{ routes: any }>) {
+    try {
+        yield call(
+            [routeMapService, routeMapService.downloadRoutesMap],
+            action.payload.routes
+        )
+        yield put(
+            routeMapSlice.actions.downloadRoutesMapSuccessReducer()
+        );
+    } catch (e) {
+        yield put(routeMapSlice.actions.downloadRoutesMapErrorReducer(handleError(e)));
+    }
+}
+
 export function* routeMap_WatchAsync() {
     yield all([
         takeEvery(routeMapSlice.actions.findOneReducer.type, findOneSaga),
+        takeEvery(routeMapSlice.actions.downloadMapReducer.type, downloadMapSaga),
+        takeEvery(routeMapSlice.actions.downloadRoutesMapReducer.type, downloadRoutesMapSaga),
     ]);
 }

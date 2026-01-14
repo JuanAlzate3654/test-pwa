@@ -1,10 +1,11 @@
 import type { RouteListModel } from "@components/route/routeList/_redux/model";
 import type { PaginationRequest } from "@integral-software/react-utilities";
+import { saveOfflineRequest } from "@openDB/openDB";
 import axios from "axios";
 
 export class RouteListService {
 
-    url = 'api/v1/routes';
+    url = (import.meta.env.VITE_API_URL || '') + 'api/v1/routes';
 
     async find(pagination: PaginationRequest): Promise<RouteListModel> {
         const params = {
@@ -43,16 +44,29 @@ export class RouteListService {
         }
     }
 
-    delete(id: string): Promise<void> {
-        return axios.delete(`${this.url}/${id}`)
+    async delete(id: string): Promise<void> {
+        const url = `${this.url}/${id}`;
+        try {
+            await axios.delete(url);
+        } catch (e: any) {
+            if (!navigator.onLine) {
+                await saveOfflineRequest(url, 'DELETE', {}, [], []);
+                return Promise.resolve();
+            }
+            return Promise.reject(e);
+        }
     }
 
-    enable(id: string): Promise<RouteListModel> {
-        return axios.patch(`${this.url}/${id}`, { id })
+    async duplicate(id: string): Promise<void> {
+        const url = `${this.url}/${id}/duplicate`;
+        try {
+            await axios.post(url);
+        } catch (e: any) {
+            if (!navigator.onLine) {
+                await saveOfflineRequest(url, 'POST', {}, [], []);
+                return Promise.resolve();
+            }
+            return Promise.reject(e);
+        }
     }
-
-    disable(id: string): Promise<RouteListModel> {
-        return axios.patch(`${this.url}/${id}`, { id })
-    }
-
 }

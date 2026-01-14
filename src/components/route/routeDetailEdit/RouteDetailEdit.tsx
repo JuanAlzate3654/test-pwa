@@ -156,6 +156,29 @@ export default function RouteDetailEdit() {
                         </FormControl>
                     </Tooltip>
 
+                    <Tooltip title={t("route_detail_edit_pagina_tooltip")} arrow>
+                        <FormControl variant="filled">
+                            <TextField
+                                slotProps={{
+                                    htmlInput: {
+                                        maxLength: 18
+                                    },
+                                    input: {
+                                        endAdornment:
+                                            <Box>
+                                                <Typography variant="caption" color="textSecondary">
+                                                    {formik.values.pagina?.length || 0}/18
+                                                </Typography>
+                                            </Box>
+                                    }
+                                }}
+                                label={t("route_detail_edit_pagina")}
+                                autoComplete={"off"}
+                                {...formikInputProps("pagina", formik)}
+                            />
+                        </FormControl>
+                    </Tooltip>
+
                     <Tooltip title={t("route_detail_edit_nomenclatura_epm_tooltip")} arrow>
                         <FormControl variant="filled">
                             <TextField label={t("route_detail_edit_nomenclatura_epm")} autoComplete={"off"} {...formikInputProps("nomenclaturaEpm", formik)} />

@@ -17,13 +17,31 @@ const PopupContent: React.FC<PopupContentProps> = ({ properties, goToDetailEdit,
 
   const { t } = useTranslation();
 
+  const propertiesRender = [
+    "fid",
+    "cbml",
+    "longitud",
+    "latitud",
+    "x_origen",
+    "y_origen",
+    "fecha",
+    "tecnico"
+  ]
+
   return (
     <Box sx={{
       display: "flex",
       flexDirection: "column",
       gap: 2
     }}>
-      <Typography variant="h6">{t('route_map_popup_content_properties')}:</Typography>
+      <Box sx={{
+        width: "100%"
+      }}>
+        <Typography variant="h6" align="center" sx={{ width: '100%' }}>
+          {t('route_map_popup_content_properties')}
+        </Typography>
+        <Box sx={{ width: '100%', borderBottom: '1px solid #ccc', mb: 1 }} />
+      </Box>
       <Box sx={{
         display: "flex",
         flexDirection: "column",
@@ -31,16 +49,7 @@ const PopupContent: React.FC<PopupContentProps> = ({ properties, goToDetailEdit,
         paddingX: 2
       }}>
         {Object.entries(properties)
-          .filter(([key]) => [
-            "fid",
-            "cbml",
-            "longitud",
-            "latitud",
-            "x_origen",
-            "y_origen",
-            "fecha",
-            "tecnico"
-          ].includes(key))
+          .filter(([key]) => propertiesRender.includes(key))
           .map(([key, value]) => (
             <li key={key}><b>{key}:</b> {String(value)}</li>
           ))}

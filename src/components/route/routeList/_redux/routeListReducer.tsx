@@ -11,7 +11,7 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { createSlice } from "@reduxjs/toolkit";
 import { t } from "i18next";
 
-type routeListStateResultType = "clearResult" | "pageResult" | "deleteResult";
+type routeListStateResultType = "clearResult" | "pageResult" | "deleteResult" | "duplicateResult";
 
 export interface RouteListStateModel {
     page: PageModel<RouteListModel>;
@@ -26,7 +26,8 @@ function defaultState(): RouteListStateModel {
         result: {
             clearResult: defaultResultModel(),
             pageResult: defaultResultModel(),
-            deleteResult: defaultResultModel()
+            deleteResult: defaultResultModel(),
+            duplicateResult: defaultResultModel(),
         },
     };
 }
@@ -74,7 +75,25 @@ export const routeListSlice = createSlice({
             result: {
                 ...mergeResultWithError<routeListStateResultType>(state, action, "deleteResult"),
             },
-        })
+        }),
+        duplicateReducer: (state, action) => ({
+            ...state,
+            result: {
+                ...mergeResultWithLoading<routeListStateResultType>(state, action, "duplicateResult"),
+            },
+        }),
+        duplicateSuccessReducer: (state, action: PayloadAction<void>) => ({
+            ...state,
+            result: {
+                ...mergeResultWithSuccess<routeListStateResultType>(state, action, "duplicateResult", t("route_list_toast_duplicate_success")),
+            },
+        }),
+        duplicateErrorReducer: (state, action) => ({
+            ...state,
+            result: {
+                ...mergeResultWithError<routeListStateResultType>(state, action, "duplicateResult"),
+            },
+        }),
     },
 });
 

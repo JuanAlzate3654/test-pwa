@@ -2,8 +2,6 @@ import { linearProgressApplySlice } from "@components/home/linearprogress/_redux
 import { linearProgress_WatchAsync } from "@components/home/linearprogress/_redux/linearProgressSaga";
 import { routeDetailEditSlice } from "@components/route/routeDetailEdit/_redux/routeDetailEditReducer";
 import { routeDetailEdit_WatchAsync } from "@components/route/routeDetailEdit/_redux/routeDetailEditSaga";
-import { routeEditSlice } from "@components/route/routeEdit/_redux/routeEditReducer";
-import { routeEdit_WatchAsync } from "@components/route/routeEdit/_redux/routeEditSaga";
 import { routeEvidenceEditSlice } from "@components/route/routeEvidenceEdit/_redux/routeEvidenceEditReducer";
 import { routeEvidenceEdit_WatchAsync } from "@components/route/routeEvidenceEdit/_redux/routeEvidenceEditSaga";
 import { routeListSlice } from "@components/route/routeList/_redux/routeListReducer";
@@ -29,7 +27,6 @@ const localReducer = {
     user: userSlice.reducer,
     linearProgress: linearProgressApplySlice.reducer,
     routeList: routeListSlice.reducer,
-    routeEdit: routeEditSlice.reducer,
     routeMap: routeMapSlice.reducer,
     routeDetailEdit: routeDetailEditSlice.reducer,
     routeEvidenceEdit: routeEvidenceEditSlice.reducer,
@@ -40,7 +37,6 @@ const localWatchSaga = [
     user_WatchAsync,
     linearProgress_WatchAsync,
     routeList_WatchAsync,
-    routeEdit_WatchAsync,
     routeMap_WatchAsync,
     routeDetailEdit_WatchAsync,
     routeEvidenceEdit_WatchAsync,

@@ -8,7 +8,7 @@ export type OfflineFile = {
 export type OfflineRequest<T = any> = {
     id?: number;
     url: string;
-    method: 'POST' | 'PUT' | 'PATCH';
+    method: 'POST' | 'PUT' | 'DELETE';
     data: T;
     images?: OfflineFile[];
     files?: OfflineFile[];

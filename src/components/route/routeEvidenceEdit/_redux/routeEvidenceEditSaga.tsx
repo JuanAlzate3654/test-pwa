@@ -38,14 +38,10 @@ export function* saveSaga(action: PayloadAction<RouteEvidenceEditModel>) {
 
 export function* deleteSaga(action: PayloadAction<{ id: string }>) {
     try {
-        const response: AxiosResponse<any, any> = yield call(
+        yield call(
             [routeEvidenceEditService, routeEvidenceEditService.delete],
             action.payload.id
         );
-        if (response) {
-            yield put(routeEvidenceEditSlice.actions.deleteErrorReducer(handleError(response.data.errors)));
-            return;
-        }
         yield put(routeEvidenceEditSlice.actions.deleteSuccessReducer());
     } catch (e) {
         yield put(routeEvidenceEditSlice.actions.deleteErrorReducer(handleError(e)));
@@ -56,5 +52,6 @@ export function* routeEvidenceEdit_WatchAsync() {
     yield all([
         takeEvery(routeEvidenceEditSlice.actions.findOneReducer.type, findOneSaga),
         takeEvery(routeEvidenceEditSlice.actions.saveReducer.type, saveSaga),
+        takeEvery(routeEvidenceEditSlice.actions.deleteReducer.type, deleteSaga),
     ]);
 }

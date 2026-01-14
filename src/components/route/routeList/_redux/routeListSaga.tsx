@@ -26,23 +26,32 @@ export function* pageSage(action: any) {
 
 export function* deleteSaga(action: PayloadAction<{ id: string }>) {
     try {
-        const response: AxiosResponse<any, any> = yield call(
+        yield call(
             [routeListService, routeListService.delete],
             action.payload.id
         );
-        if (response) {
-            yield put(routeListSlice.actions.deleteErrorReducer(handleError(response.data.errors)));
-            return;
-        }
         yield put(routeListSlice.actions.deleteSuccessReducer());
     } catch (e) {
         yield put(routeListSlice.actions.deleteErrorReducer(handleError(e)));
     }
 }
 
+export function* duplicateSaga(action: PayloadAction<{ id: string }>) {
+    try {
+        yield call(
+            [routeListService, routeListService.duplicate],
+            action.payload.id
+        );
+        yield put(routeListSlice.actions.duplicateSuccessReducer());
+    } catch (e) {
+        yield put(routeListSlice.actions.duplicateErrorReducer(handleError(e)));
+    }
+}
+
 export function* routeList_WatchAsync() {
     yield all([
         takeEvery(routeListSlice.actions.pageReducer.type, pageSage),
-        takeEvery(routeListSlice.actions.deleteReducer.type, deleteSaga)
+        takeEvery(routeListSlice.actions.deleteReducer.type, deleteSaga),
+        takeEvery(routeListSlice.actions.duplicateReducer.type, duplicateSaga),
     ]);
 }

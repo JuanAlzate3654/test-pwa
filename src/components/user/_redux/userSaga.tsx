@@ -1,9 +1,9 @@
 import type { AxiosResponse } from "axios";
-import {all, put, takeEvery} from "redux-saga/effects";
+import { all, put, takeEvery } from "redux-saga/effects";
 
 import type { UserModel } from ".";
-import {userSlice} from "./userReducer";
-import {UserService} from "./UserService";
+import { userSlice } from "./userReducer";
+import { UserService } from "./UserService";
 
 const userService = new UserService();
 

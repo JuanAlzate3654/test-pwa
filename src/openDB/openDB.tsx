@@ -11,7 +11,7 @@ export const dbPromise = openDB('pwa-offline-db', 1, {
 
 export async function saveOfflineRequest<T>(
     url: string,
-    method: 'POST' | 'PUT',
+    method: 'POST' | 'PUT' | 'DELETE',
     data: T,
     images: { field: string; image: File }[],
     files: { field: string; file: File }[]

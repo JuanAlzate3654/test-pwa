@@ -39,19 +39,30 @@ export default function RouteListMenu({ route, setMapIsActive }: RouteListMenuPr
 
     const closeMenu = () => setMenu(null);
 
-    const [openDialog, setOpenDialog] = useState<boolean>(false);
+    const [openDialogDelete, setOpenDialogDelete] = useState<boolean>(false);
 
-    const afterCloseDialog = (response: boolean) => {
+    const [openDialogDuplicate, setOpenDialogDuplicate] = useState<boolean>(false);
+
+    const afterCloseDialogDelete = (response: boolean) => {
         if (response) {
             globalStore.DispatchAction(APP_ID, routeListSlice.actions.deleteReducer({ id: route.id }));
             closeMenu();
         }
 
-        setOpenDialog(false);
+        setOpenDialogDelete(false);
     };
 
-    const goToEdit = () => {
-        void navigate(`${route.id}/edit`, { relative: "route" });
+    const afterCloseDialogDuplicate = (response: boolean) => {
+        if (response) {
+            globalStore.DispatchAction(APP_ID, routeListSlice.actions.duplicateReducer({ id: route.id }));
+            closeMenu();
+        }
+
+        setOpenDialogDuplicate(false);
+    };
+
+    const goToDetailEdit = () => {
+        void navigate(`${route.cbml}/detail-edit`, { relative: "route" });
         closeMenu();
     };
 
@@ -67,11 +78,6 @@ export default function RouteListMenu({ route, setMapIsActive }: RouteListMenuPr
 
     const goToEvidences = () => {
         void navigate(`${route.cbml}/evidence-edit`, { relative: "route" });
-        closeMenu();
-    };
-
-    const goToDuplicate = () => {
-        void navigate(`${route.cbml}/duplicate`, { relative: "route" });
         closeMenu();
     };
 
@@ -96,9 +102,9 @@ export default function RouteListMenu({ route, setMapIsActive }: RouteListMenuPr
                 }}
             >
                 <MenuItem style={styles.link}
-                    onClick={goToEdit}>
+                    onClick={goToDetailEdit}>
                     <EditIcon />
-                    {t("route_list_menu_edit")}
+                    {t("route_list_menu_detail_edit")}
                 </MenuItem>
 
                 <MenuItem style={styles.link}
@@ -120,24 +126,32 @@ export default function RouteListMenu({ route, setMapIsActive }: RouteListMenuPr
                 </MenuItem>
 
                 <MenuItem style={styles.link}
-                    onClick={() => setOpenDialog(true)}>
+                    onClick={() => setOpenDialogDelete(true)}>
                     <DeleteIcon />
                     {t("route_list_menu_delete")}
                 </MenuItem>
 
                 <MenuItem style={styles.link}
-                    onClick={() => setOpenDialog(true)}>
+                    onClick={() => setOpenDialogDuplicate(true)}>
                     <DifferenceIcon />
                     {t("route_list_menu_duplicate")}
                 </MenuItem>
             </MenuUi>
 
-            <ConfirmDialogV2 show={openDialog} type={'delete'} onAfterCloseDialog={afterCloseDialog} config={{
+            <ConfirmDialogV2 show={openDialogDelete} type={'delete'} onAfterCloseDialog={afterCloseDialogDelete} config={{
                 title: t("route_list_menu_delete_title"),
                 message: t("route_list_menu_delete_message"),
                 confirmtext: t("route_list_menu_delete_confirm_text"),
                 textBtnConfirm: t("route_list_menu_delete_confirm_button_text"),
                 textBtnClose: t("route_list_menu_delete_close_button_text"),
+            }} />
+
+            <ConfirmDialogV2 show={openDialogDuplicate} type={'delete'} onAfterCloseDialog={afterCloseDialogDuplicate} config={{
+                title: t("route_list_menu_duplicate_title"),
+                message: t("route_list_menu_duplicate_message"),
+                confirmtext: t("route_list_menu_duplicate_confirm_text"),
+                textBtnConfirm: t("route_list_menu_duplicate_confirm_button_text"),
+                textBtnClose: t("route_list_menu_duplicate_close_button_text"),
             }} />
         </div>
     );

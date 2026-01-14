@@ -1,5 +1,4 @@
 import RouteDetailEdit from "@components/route/routeDetailEdit/RouteDetailEdit";
-import RouteEdit from "@components/route/routeEdit/RouteEdit";
 import RouteEvidenceEdit from "@components/route/routeEvidenceEdit/RouteEvidenceEdit";
 import RouteList from "@components/route/routeList/RouteList";
 import RouteSurvey from "@components/route/routeSurvey/RouteSurvey";
@@ -16,12 +15,6 @@ export default function RouteRoutes() {
                     <RouterWithDialog component={<RouteList />} />
                 </Suspense>
             }>
-                <Route path=":id/edit"
-                    element={
-                        <Suspense fallback={"🌀 Loading"}>
-                            <RouteEdit />
-                        </Suspense>
-                    } />
                 <Route path=":id/detail-edit"
                     element={
                         <Suspense fallback={"🌀 Loading"}>

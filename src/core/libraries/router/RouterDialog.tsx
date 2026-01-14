@@ -1,5 +1,3 @@
-import React from "react";
-import {Outlet} from "react-router-dom";
 
 /**
  * router dialog props
@@ -17,7 +15,6 @@ export default function RouterDialog({ component }: RouterDialogProps) {
   return (
     <>
       {component}
-      <Outlet />
     </>
   );
 }

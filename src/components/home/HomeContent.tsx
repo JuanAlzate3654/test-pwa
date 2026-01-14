@@ -13,12 +13,12 @@ export default function HomeContent() {
                     xs: "null",
                     sm: "248px"
                 },
-                margin: {                    
+                margin: {
                     xs: "16px",
                     sm: "none",
                 }
             }}>
-                <Outlet/>             
+                <Outlet />
             </Box>
         </Box>
     );

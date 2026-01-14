@@ -29,7 +29,7 @@ export const routeDetailEditSchema = yup.object().shape({
     principal: yup.string().required(t("route_detail_edit_principal_required")),
     estrato: yup.string().required(t("route_detail_edit_estrato_required")),
     descripcion: yup.string().required(t("route_detail_edit_descripcion_required")),
-    pagina: yup.string().required(t("route_detail_edit_pagina_required")),
+    pagina: yup.string().max(18).required(t("route_detail_edit_pagina_required")),
     nomenclaturaEpm: yup.string().required(t("route_detail_edit_nomenclatura_epm_required")),
     observacion: yup.string().required(t("route_detail_edit_observacion_required")),
     estado: yup.string().required(t("route_detail_edit_estado_required")),

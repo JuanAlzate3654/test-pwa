@@ -15,7 +15,7 @@ export function* findOneSaga(action: PayloadAction<{ id: string }>) {
             action.payload.id
         )
         yield put(
-            routeSurveySlice.actions.findOneSuccessReducer(response.data)
+            routeSurveySlice.actions.findOneSuccessReducer(response)
         );
     } catch (e) {
         yield put(routeSurveySlice.actions.findOneErrorReducer(handleError(e)));

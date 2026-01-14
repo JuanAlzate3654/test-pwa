@@ -2,7 +2,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import './RouteMap.css';
 
 import { routeMapSlice, type RouteMapStateModel } from '@components/route/routeMap/_redux/routeMapReducer';
-import { globalStore, isSuccess, LateralDialog, LoadDiv2, useGlobalSelector } from '@integral-software/react-utilities';
+import { globalStore, isLoading, isSuccess, LateralDialog, LoadDiv2, useGlobalSelector } from '@integral-software/react-utilities';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Box, Button, Tooltip } from '@mui/material';
@@ -11,7 +11,8 @@ import maplibregl from 'maplibre-gl';
 import { useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { useTranslation } from 'react-i18next';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import PopupContent from './PopupContent';
 
 export interface MapViewProps {
@@ -45,26 +46,6 @@ export default function MapView({ cbmls, setMapIsActive }: MapViewProps) {
     const goToSurvey = (id: string) => {
         void navigate(`${id}/survey`, { relative: "route" });
     };
-
-    async function getRoute(
-        start: [number, number],
-        end: [number, number]
-    ) {
-        const url = `https://router.project-osrm.org/route/v1/driving/` +
-            `${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
-            if (!data.routes || !data.routes.length) {
-                console.warn('No se encontró ruta OSRM', data);
-                return null;
-            }
-            return data.routes[0].geometry;
-        } catch (err) {
-            console.error('Error obteniendo ruta OSRM', err);
-            return null;
-        }
-    }
 
     const drawRoute = (cbml: string, geometry: GeoJSON.LineString) => {
         if (!mapInstance.current) return;
@@ -103,20 +84,6 @@ export default function MapView({ cbmls, setMapIsActive }: MapViewProps) {
                 'line-width': 5
             }
         });
-    };
-
-    const fetchRoute = async () => {
-        if (mapInstance.current) {
-
-            for (const route of routes!) {
-                const geometry = await getRoute(route.start!, route.end!);
-                if (geometry) {
-                    drawRoute(route.cbml, geometry);
-                } else {
-                    console.warn('No se pudo dibujar la ruta: datos no válidos');
-                }
-            }
-        }
     };
 
     const getPolygonColor = (route: any) => {
@@ -208,21 +175,6 @@ export default function MapView({ cbmls, setMapIsActive }: MapViewProps) {
         };
     };
 
-    const lonLatToTile = (lon: number, lat: number, zoom: number) => {
-        const x = Math.floor(((lon + 180) / 360) * Math.pow(2, zoom));
-        const y = Math.floor(
-            ((1 -
-                Math.log(
-                    Math.tan((lat * Math.PI) / 180) +
-                    1 / Math.cos((lat * Math.PI) / 180)
-                ) /
-                Math.PI) /
-                2) *
-            Math.pow(2, zoom)
-        );
-        return { x, y };
-    };
-
     const createUserMarkerElement = () => {
         const el = document.createElement('div');
         el.style.width = '16px';
@@ -307,6 +259,40 @@ export default function MapView({ cbmls, setMapIsActive }: MapViewProps) {
         });
     };
 
+    const fetchRoute = async () => {
+        if (mapInstance.current) {
+
+            for (const route of routes!) {
+                const geometry = await getRoute(route.start!, route.end!);
+                if (geometry) {
+                    drawRoute(route.cbml, geometry);
+                } else {
+                    console.warn('No se pudo dibujar la ruta: datos no válidos');
+                }
+            }
+        }
+    };
+
+    async function getRoute(
+        start: [number, number],
+        end: [number, number]
+    ) {
+        const url = `https://router.project-osrm.org/route/v1/driving/` +
+            `${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (!data.routes || !data.routes.length) {
+                console.warn('No se encontró ruta OSRM', data);
+                return null;
+            }
+            return data.routes[0].geometry;
+        } catch (err) {
+            console.error('Error obteniendo ruta OSRM', err);
+            return null;
+        }
+    }
+
     const goToInMap = async (center: any, zoom: number) => {
         if (!mapInstance.current) return;
 
@@ -318,39 +304,24 @@ export default function MapView({ cbmls, setMapIsActive }: MapViewProps) {
     };
 
     async function downloadTiles(bounds: Bounds, zoom: number) {
-        const cache = await caches.open('map-tiles');
-
-        const minTile = lonLatToTile(bounds.minLon, bounds.maxLat, zoom);
-        const maxTile = lonLatToTile(bounds.maxLon, bounds.minLat, zoom);
-
-        for (let x = minTile.x; x <= maxTile.x; x++) {
-            for (let y = minTile.y; y <= maxTile.y; y++) {
-                const url = `https://tile.openstreetmap.org/${zoom}/${x}/${y}.png`;
-                if (!(await cache.match(url))) {
-                    try {
-                        const res = await fetch(url);
-                        if (res.ok) await cache.put(url, res.clone());
-                    } catch {
-                        console.warn('Tile no descargado', url);
-                    }
-                }
-            }
-        }
+        globalStore.DispatchAction(APP_ID, routeMapSlice.actions.downloadMapReducer({ bounds, zoom }));
     }
 
-    async function downloadRoute() {
-        for (const route of routes!) {
-            const url =
-                `https://router.project-osrm.org/route/v1/driving/` +
-                `${route.start![0]},${route.start[1]};${route.end[0]},${route.end[1]}?overview=full&geometries=geojson`;
-
-            try {
-                await fetch(url, { cache: 'no-store' });
-            } catch (e) {
-                console.warn('No se pudo descargar la ruta', e);
-            }
-        }
+    async function downloadRoutes() {
+        globalStore.DispatchAction(APP_ID, routeMapSlice.actions.downloadRoutesMapReducer({ routes }));
     }
+
+    useEffect(() => {
+        if (isSuccess(result.downloadMapResult)) {
+            toast.success(t('route_map_download_tiles_success_toast'));
+        }
+    }, [result.downloadMapResult]);
+
+    useEffect(() => {
+        if (isSuccess(result.downloadRoutesMapResult)) {
+            toast.success(t('route_map_download_routes_success_toast'));
+        }
+    }, [result.downloadRoutesMapResult]);
 
     useEffect(() => {
         if (cbmls) {
@@ -385,7 +356,7 @@ export default function MapView({ cbmls, setMapIsActive }: MapViewProps) {
             Sticky={
                 <Box sx={{ display: 'flex', gap: 1 }}>
 
-                    <Button
+                    <Button loading={isLoading(result.downloadMapResult)}
                         onClick={async () => {
                             const bounds = getCurrentBounds();
                             if (!bounds || !mapInstance.current) return;
@@ -393,7 +364,7 @@ export default function MapView({ cbmls, setMapIsActive }: MapViewProps) {
                             const z = Math.floor(mapInstance.current.getZoom());
                             for (let zoom = z - 1; zoom <= z + 1; zoom++) {
                                 await downloadTiles(bounds, zoom);
-                                await downloadRoute();
+                                await downloadRoutes();
                             }
                         }}
                     >
@@ -441,7 +412,6 @@ export default function MapView({ cbmls, setMapIsActive }: MapViewProps) {
                     padding: 0
                 }} />
             </LoadDiv2>
-            <Outlet />
         </LateralDialog>
     );
 }

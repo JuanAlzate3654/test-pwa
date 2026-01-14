@@ -1,4 +1,4 @@
-import type { RouteEditStateModel } from "@components/route/routeEdit/_redux/routeEditReducer";
+import type { RouteDetailEditStateModel } from "@components/route/routeDetailEdit/_redux/routeDetailEditReducer";
 import type { RouteListModel } from "@components/route/routeList/_redux/model";
 import type { RouteListStateModel } from "@components/route/routeList/_redux/routeListReducer";
 import { routeListSlice } from "@components/route/routeList/_redux/routeListReducer";
@@ -17,12 +17,13 @@ import { Button, FormControl, InputAdornment, Paper, TextField, Tooltip, Typogra
 import Box from "@mui/material/Box";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { DataGrid } from "@mui/x-data-grid";
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { APP_ID } from "src/store/store";
 import RouteListMenu from "./RouteListMenu";
 
 export default function RouteList() {
+
 
     const { t } = useTranslation();
 
@@ -39,7 +40,7 @@ export default function RouteList() {
     const isGeSm = useMediaQuery(theme.breakpoints.up('sm'));
     const globalStore = GlobalStore.Get();
     const { page, pagination, result } = useGlobalSelector<RouteListStateModel>(APP_ID, ({ routeList }) => routeList);
-    const { result: resultEdit } = useGlobalSelector<RouteEditStateModel>(APP_ID, ({ routeEdit }) => routeEdit);
+    const { result: resultEdit } = useGlobalSelector<RouteDetailEditStateModel>(APP_ID, ({ routeDetailEdit }) => routeDetailEdit);
 
     const {
         selectionColumn, props, prepareRequest, selectedModel
@@ -54,6 +55,8 @@ export default function RouteList() {
             loadCapabilitiesList()
         }
     });
+
+    const mapViewKey = useMemo(() => selectedModel.selected.join("-"), [JSON.stringify(selectedModel.selected)]);
 
     const columnsXs: GridColDef[] = [
         {
@@ -256,7 +259,7 @@ export default function RouteList() {
                 hideFooterSelectedRowCount={true}
                 disableColumnMenu={true} />
             {mapIsActive &&
-                <MapView cbmls={selectedModel.selected} setMapIsActive={setMapIsActive} />
+                <MapView key={mapViewKey} cbmls={selectedModel.selected} setMapIsActive={setMapIsActive} />
             }
         </Box>
     );
